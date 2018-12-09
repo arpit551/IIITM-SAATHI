@@ -5,6 +5,9 @@ import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,7 +41,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     GoogleMap map;
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
-
+    String origin,destination;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +53,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         tvDistanceDuration = (TextView) findViewById(R.id.text);
 
 
+      origin= getIntent().getStringExtra("Origin");
+      destination=getIntent().getStringExtra("Destination");
 
     }
 
@@ -155,6 +160,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             // Invokes the thread for parsing the JSON data
             parserTask.execute(result);
+
+            Log.d("result", result);
         }
     }
 
@@ -191,6 +198,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             String distance = "";
             String duration = "";
 
+
             if (result.size() < 1) {
                 Toast.makeText(getBaseContext(), "No Points", Toast.LENGTH_SHORT).show();
                 return;
@@ -225,7 +233,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
-                lineOptions.width(2);
+                lineOptions.width(3);
                 lineOptions.color(Color.RED);
             }
 
@@ -245,6 +253,78 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+    /*
+    me
+     */
+    private List<LatLng> decodePoly1(String encoded) {
+
+        List<LatLng> poly = new ArrayList<LatLng>();
+        int index = 0, len = encoded.length();
+        int lat = 0, lng = 0;
+
+        while (index < len) {
+            int b, shift = 0, result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lat += dlat;
+
+            shift = 0;
+            result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lng += dlng;
+
+            LatLng p = new LatLng((((double) lat / 1E5)),
+                    (((double) lng / 1E5)));
+            poly.add(p);
+        }
+        return poly;
+    }
+    private  LatLng  placeToLatLng(String place){
+        if(place=="Main Gate")
+        {
+
+            LatLng main_gate = new LatLng(26.25002, 78.17634);
+            return main_gate;
+        }
+        return null;
+    }
+
+    private void getDirectionAS(String origin, String dest) {
+        placeToLatLng(origin);
+        placeToLatLng(dest);
+        if(origin.equals("Main Gate ") && dest.equals("Administrative Block")){
+            List<LatLng> poly= decodePoly1("s}e_D_yc|MF`@?RKPAH?HBD?HBDF@FBBJv@tFL^");
+        ArrayList<LatLng> points = null;
+
+        PolylineOptions p= null;
+        points = new ArrayList<LatLng>();
+            for (int l = 0; l <poly.size(); l++) {
+
+                points.add(poly.get(l));
+                p = new PolylineOptions();
+                p.addAll(points);
+                p.width(16);
+                p.color(Color.BLUE);
+
+            }
+        mMap.addPolyline(p);
+
+       }
+
+
+
+
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -301,6 +381,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
+
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(26.249994, 78.176121);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -334,11 +415,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //move camera to fill the bound to screen
 //        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
 //
+        getDirectionAS(origin,destination);
 //        //set zoom to level to current so that you won't be able to zoom out viz. move outside bounds
 //        mMap.setMinZoomPreference(mMap.getCameraPosition().zoom);
         mMap.setMapStyle(
                 MapStyleOptions.loadRawResourceStyle(
                         this, R.raw.style_json));
+        ArrayList<LatLng> points = null;
+        PolylineOptions audi_lrc= null;
+        points = new ArrayList<LatLng>();
+        audi_lrc = new PolylineOptions();
+        double lat = 26.249182;
+        double lng =78.172871;
+        LatLng position = new LatLng(lat, lng);
+
+        points.add(position);
+        double lat1 = 26.249428;
+        double lng1 =78.174073;
+        LatLng position1 = new LatLng(lat1, lng1);
+
+        points.add(position1);
+        audi_lrc.addAll(points);
+        audi_lrc.width(16);
+        audi_lrc.color(Color.WHITE);
+
+        mMap.addPolyline(audi_lrc);
+
 
 
     }

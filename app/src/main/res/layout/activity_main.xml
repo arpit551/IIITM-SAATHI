@@ -5,29 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    
 
-    <Button
+
+<Button
         android:id="@+id/currentlocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Your Current Location"
         />
+
     <Button
         android:id="@+id/destinationlocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Your Destination"
         />
-    <TextView
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/go"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/text"
+        android:text="Go"
         />
-    <fragment
-    android:id="@+id/map1"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MapsActivity" />
 </LinearLayout>
