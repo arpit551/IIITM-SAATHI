@@ -1,9 +1,15 @@
 package com.f2w.arpit.college_map;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +22,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -42,6 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
     String origin,destination;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -333,55 +341,61 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Enable MyLocation Button in the Map
 
         // Setting onclick event listener for the map
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//
+//            @Override
+//            public void onMapClick(LatLng point) {
+//
+//                // Already two locations
+//                if (markerPoints.size() > 1) {
+//                    markerPoints.clear();
+//                    mMap.clear();
+//                }
+//
+//                // Adding new item to the ArrayList
+//                markerPoints.add(point);
+//
+//                // Creating MarkerOptions
+//                MarkerOptions options = new MarkerOptions();
+//
+//                // Setting the position of the marker
+//                options.position(point);
+//
+//                /**
+//                 * For the start location, the color of marker is GREEN and
+//                 * for the end location, the color of marker is RED.
+//                 */
+//                if (markerPoints.size() == 1) {
+//                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//                } else if (markerPoints.size() == 2) {
+//                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+//                }
+//
+//                // Add new marker to the Google Map Android API V2
+//                mMap.addMarker(options);
+//
+//                // Checks, whether start and end locations are captured
+//                if (markerPoints.size() >= 2) {
+//                    LatLng origin = markerPoints.get(0);
+//                    LatLng dest = markerPoints.get(1);
+//
+//                    // Getting URL to the Google Directions API
+//                    String url = getDirectionsUrl(origin, dest);
+//
+//                    DownloadTask downloadTask = new DownloadTask();
+//
+//                    // Start downloading json data from Google Directions API
+//                    downloadTask.execute(url);
+//                }
+//            }
+//        });
+////location
+//        mMap.setOnMyLocationButtonClickListener(onMyLocationButtonClickListener);
+//        mMap.setOnMyLocationClickListener(onMyLocationClickListener);
+        enableMyLocationIfPermitted();
 
-            @Override
-            public void onMapClick(LatLng point) {
-
-                // Already two locations
-                if (markerPoints.size() > 1) {
-                    markerPoints.clear();
-                    mMap.clear();
-                }
-
-                // Adding new item to the ArrayList
-                markerPoints.add(point);
-
-                // Creating MarkerOptions
-                MarkerOptions options = new MarkerOptions();
-
-                // Setting the position of the marker
-                options.position(point);
-
-                /**
-                 * For the start location, the color of marker is GREEN and
-                 * for the end location, the color of marker is RED.
-                 */
-                if (markerPoints.size() == 1) {
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                } else if (markerPoints.size() == 2) {
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                }
-
-                // Add new marker to the Google Map Android API V2
-                mMap.addMarker(options);
-
-                // Checks, whether start and end locations are captured
-                if (markerPoints.size() >= 2) {
-                    LatLng origin = markerPoints.get(0);
-                    LatLng dest = markerPoints.get(1);
-
-                    // Getting URL to the Google Directions API
-                    String url = getDirectionsUrl(origin, dest);
-
-                    DownloadTask downloadTask = new DownloadTask();
-
-                    // Start downloading json data from Google Directions API
-                    downloadTask.execute(url);
-                }
-            }
-        });
-
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.setMinZoomPreference(11);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(26.249994, 78.176121);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -398,21 +412,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLngBounds bounds = builder.build();
 
         //get width and height to current display screen
-        int width = getResources().getDisplayMetrics().widthPixels;
-        int height = getResources().getDisplayMetrics().heightPixels;
-
-        // 20% padding
-        int padding = (int) (width * 0.10);
-
-        //set latlong bounds
-        LatLng lt2 = new LatLng(26.249759, 78.172947);
-        mMap.setLatLngBoundsForCameraTarget(bounds);
-        mMap.addMarker(new MarkerOptions()
-                .position(lt2)
+//        int width = getResources().getDisplayMetrics().widthPixels;
+//        int height = getResources().getDisplayMetrics().heightPixels;
+//
+//        // 20% padding
+//        int padding = (int) (width * 0.10);
+//
+//        //set latlong bounds
+       LatLng lt2 = new LatLng(26.249759, 78.172947);
+//        mMap.setLatLngBoundsForCameraTarget(bounds);
+       mMap.addMarker(new MarkerOptions()
+               .position(lt2)
                 .title("LT-2")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.exhibition_map)));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
-        //move camera to fill the bound to screen
+               .icon(BitmapDescriptorFactory.fromResource(R.drawable.exhibition_map)));
+       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
+//        //move camera to fill the bound to screen
 //        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
 //
         getDirectionAS(origin,destination);
@@ -444,4 +458,69 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
+    private void enableMyLocationIfPermitted() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        } else if (mMap != null) {
+            mMap.setMyLocationEnabled(true);
+        }
+    }
+
+    private void showDefaultLocation() {
+        Toast.makeText(this, "Location permission not granted, " +
+                        "showing default location",
+                Toast.LENGTH_SHORT).show();
+        LatLng redmond = new LatLng(47.6739881, -122.121512);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(redmond));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case LOCATION_PERMISSION_REQUEST_CODE: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    enableMyLocationIfPermitted();
+                } else {
+                    showDefaultLocation();
+                }
+                return;
+            }
+
+        }
+    }
+//
+//    private GoogleMap.OnMyLocationButtonClickListener onMyLocationButtonClickListener =
+//            new GoogleMap.OnMyLocationButtonClickListener() {
+//                @Override
+//                public boolean onMyLocationButtonClick() {
+//                    mMap.setMinZoomPreference(15);
+//                    return false;
+//                }
+//            };
+
+//    private GoogleMap.OnMyLocationClickListener onMyLocationClickListener =
+//            new GoogleMap.OnMyLocationClickListener() {
+//                @Override
+//                public void onMyLocationClick(@NonNull Location location) {
+//
+//                    mMap.setMinZoomPreference(12);
+//
+//                    CircleOptions circleOptions = new CircleOptions();
+//                    circleOptions.center(new LatLng(location.getLatitude(),
+//                            location.getLongitude()));
+//
+//                    circleOptions.radius(200);
+//                    circleOptions.fillColor(Color.RED);
+//                    circleOptions.strokeWidth(6);
+//
+//                    mMap.addCircle(circleOptions);
+//                }
+//            };
 }
