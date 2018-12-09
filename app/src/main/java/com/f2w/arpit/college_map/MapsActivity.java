@@ -1,33 +1,34 @@
 package com.f2w.arpit.college_map;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONObject;
@@ -42,28 +43,41 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     private GoogleMap mMap;
     GoogleMap map;
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
     String origin,destination;
+    private LocationManager locationManager;
+    private static final long MIN_TIME = 400;
+    private static final float MIN_DISTANCE = 1000;
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    SupportMapFragment mapFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map1);
         mapFragment.getMapAsync(this);
         tvDistanceDuration = (TextView) findViewById(R.id.text);
-
-
       origin= getIntent().getStringExtra("Origin");
       destination=getIntent().getStringExtra("Destination");
 
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this); //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mapFragment.getMapAsync(this);
     }
 
     private String getDirectionsUrl(LatLng origin, LatLng dest) {
@@ -136,6 +150,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.d("data12", data);
 
         return data;
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        CameraUpdate center=
+                CameraUpdateFactory.newLatLng(latLng);
+        CameraUpdate zoom=CameraUpdateFactory.zoomTo(20.0f);
+
+        mMap.moveCamera(center);
+        mMap.animateCamera(zoom);
+//move map camera
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 
     // Fetches data from url passed
@@ -305,29 +362,90 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         return null;
     }
-
-    private void getDirectionAS(String origin, String dest) {
-        placeToLatLng(origin);
-        placeToLatLng(dest);
-        if(origin.equals("Main Gate ") && dest.equals("Administrative Block")){
-            List<LatLng> poly= decodePoly1("s}e_D_yc|MF`@?RKPAH?HBD?HBDF@FBBJv@tFL^");
+    private void pathDrawn(List<LatLng> poly){
         ArrayList<LatLng> points = null;
 
         PolylineOptions p= null;
+
         points = new ArrayList<LatLng>();
-            for (int l = 0; l <poly.size(); l++) {
+        for (int l = 0; l <poly.size(); l++) {
 
-                points.add(poly.get(l));
-                p = new PolylineOptions();
-                p.addAll(points);
-                p.width(16);
-                p.color(Color.BLUE);
+            points.add(poly.get(l));
+            p = new PolylineOptions();
+            p.addAll(points);
+            p.width(14);
+            p.color(Color.BLUE);
 
-            }
+        }
         mMap.addPolyline(p);
+
+    }
+    private void getDirectionAS(String origin, String dest) {
+        placeToLatLng(origin);
+        placeToLatLng(dest);
+        if(origin.equals("Main Gate ") )
+        {
+                if(dest.equals("Administrative Block")) {
+                    List<LatLng> poly = decodePoly1("w}e_Dayc|MJ|@CBCBCBADAF?F@D@BBDBBB@B@B@dA|G");
+                    pathDrawn(poly);
+                }
+                if(dest.equals("Learning Resource Center")) {
+                    List<LatLng> poly = decodePoly1("cze_Dskc|MJz@l@zD");
+
+                    pathDrawn(poly);
+                    getDirectionAS("Main Gate ","Administrative Block");
+
+                }
+                 if(dest.equals("B-Block/LT-1")) {
+
+                getDirectionAS("Main Gate ","Administrative Block");
+                     getDirectionAS("Administrative Block","B-Block/LT-1");
+                }
+                if(dest.equals("New Auditorium")) {
+
+                getDirectionAS("Main Gate ","Administrative Block");
+                getDirectionAS("Administrative Block","New Auditorium");
+                }
+
+
 
        }
 
+
+        if(origin.equals("Sports Complex"))
+        {
+            if(dest.equals("Learning Resource Center")) {
+                List<LatLng> poly = decodePoly1("ihe_Dw_c|MvBmKsQeKuCz@_@h@lAlG");
+
+                pathDrawn(poly);
+                getDirectionAS("Administrative Block","Learning Resource Center");
+
+            }
+
+        }
+
+        if(origin.equals("Administrative Block")){
+            if(dest.equals("Learning Resource Center")) {
+                List<LatLng> poly = decodePoly1("cze_Dskc|MJz@l@zD");
+
+                pathDrawn(poly);
+
+            }
+            if(dest.equals("New Auditorium")){
+                List<LatLng> poly = decodePoly1("aze_Dskc|Md@nC@BB@hAMDA");
+
+                pathDrawn(poly);
+
+
+            }
+            if(dest.equals("B-Block/LT-1")){
+                List<LatLng> poly = decodePoly1("eze_Dokc|Mb@pCAD?B?BCDCBCBCBCBCDAB?@QL]B");
+
+                pathDrawn(poly);
+
+
+            }
+        }
 
 
 
@@ -394,22 +512,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        mMap.setOnMyLocationClickListener(onMyLocationClickListener);
         enableMyLocationIfPermitted();
 
+
+
+
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.setMinZoomPreference(11);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(26.249994, 78.176121);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //get latlong for corners for specified place
-        LatLng one = new LatLng(26.253943, 78.169293);
-        LatLng two = new LatLng(26.246070, 78.174269);
-
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-        //add them to builder
-        builder.include(one);
-        builder.include(two);
-
-        LatLngBounds bounds = builder.build();
+//        LatLng one = new LatLng(26.253943, 78.169293);
+//        LatLng two = new LatLng(26.246070, 78.174269);
+//
+//        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+//
+//        //add them to builder
+//        builder.include(one);
+//        builder.include(two);
+//
+//        LatLngBounds bounds = builder.build();
 
         //get width and height to current display screen
 //        int width = getResources().getDisplayMetrics().widthPixels;
@@ -425,7 +546,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                .position(lt2)
                 .title("LT-2")
                .icon(BitmapDescriptorFactory.fromResource(R.drawable.exhibition_map)));
-       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
+//       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
 //        //move camera to fill the bound to screen
 //        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
 //
@@ -453,11 +574,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         audi_lrc.width(16);
         audi_lrc.color(Color.WHITE);
 
-        mMap.addPolyline(audi_lrc);
+       // mMap.addPolyline(audi_lrc);
 
 
 
     }
+
     private void enableMyLocationIfPermitted() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -495,7 +617,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
     }
-//
+
 //    private GoogleMap.OnMyLocationButtonClickListener onMyLocationButtonClickListener =
 //            new GoogleMap.OnMyLocationButtonClickListener() {
 //                @Override
