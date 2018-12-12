@@ -15,6 +15,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,7 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks,
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
@@ -51,27 +53,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     GoogleMap map;
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
-    String origin,destination;
+    String origin, destination;
     private LocationManager locationManager;
-    private static final long MIN_TIME = 400;
-    private static final float MIN_DISTANCE = 1000;
+    Button start, stop;
+    Boolean flag1 = false;
+    int flag2 = 2;
+    String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "New Auditorium", "Cafeteria Canteen", "Cricket Ground", "A-Block", "B-Block/LT-1", "C-Block", "D-Block", "E-Block", "F-Block", "G-Block", "H-Block", "Hospital", "Open Air Theatre (OAT)", "Sports Complex"};
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     SupportMapFragment mapFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-         mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map1);
         mapFragment.getMapAsync(this);
         tvDistanceDuration = (TextView) findViewById(R.id.text);
-      origin= getIntent().getStringExtra("Origin");
-      destination=getIntent().getStringExtra("Destination");
+        origin = getIntent().getStringExtra("Origin");
+        destination = getIntent().getStringExtra("Destination");
+        start = (Button) findViewById(R.id.start);
+        start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                flag1 = true;
+            }
+        });
+        stop = (Button) findViewById(R.id.stop);
+        stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                flag2 = 1;
+            }
+        });
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this); //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 0, this); //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
     }
 
     @Override
@@ -153,14 +182,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onLocationChanged(Location location) {
+    public void onLocationChanged(Location location) {if(flag1==true &&flag2==2) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        CameraUpdate center=
+        Log.d("data12", String.valueOf((location.getLatitude()))
+        );
+        CameraUpdate center =
                 CameraUpdateFactory.newLatLng(latLng);
-        CameraUpdate zoom=CameraUpdateFactory.zoomTo(20.0f);
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(18.0f);
 
         mMap.moveCamera(center);
         mMap.animateCamera(zoom);
+    }
+    else
+    {
+      mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
+    }
 //move map camera
     }
 
@@ -380,72 +416,76 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addPolyline(p);
 
     }
-    private void getDirectionAS(String origin, String dest) {
-        placeToLatLng(origin);
-        placeToLatLng(dest);
-        if(origin.equals("Main Gate ") )
-        {
-                if(dest.equals("Administrative Block")) {
-                    List<LatLng> poly = decodePoly1("w}e_Dayc|MJ|@CBCBCBADAF?F@D@BBDBBB@B@B@dA|G");
-                    pathDrawn(poly);
-                }
-                if(dest.equals("Learning Resource Center")) {
-                    List<LatLng> poly = decodePoly1("cze_Dskc|MJz@l@zD");
 
-                    pathDrawn(poly);
-                    getDirectionAS("Main Gate ","Administrative Block");
-
-                }
-                 if(dest.equals("B-Block/LT-1")) {
-
-                getDirectionAS("Main Gate ","Administrative Block");
-                     getDirectionAS("Administrative Block","B-Block/LT-1");
-                }
-                if(dest.equals("New Auditorium")) {
-
-                getDirectionAS("Main Gate ","Administrative Block");
-                getDirectionAS("Administrative Block","New Auditorium");
-                }
-
-
-
-       }
-
-
-        if(origin.equals("Sports Complex"))
-        {
-            if(dest.equals("Learning Resource Center")) {
-                List<LatLng> poly = decodePoly1("ihe_Dw_c|MvBmKsQeKuCz@_@h@lAlG");
-
-                pathDrawn(poly);
-                getDirectionAS("Administrative Block","Learning Resource Center");
-
+    String[][][] p =
+            {{{"0", ""}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"1", "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"1", ""}, {"2", "_ze_Dkkc|MfAhH"}, {"3", "_ze_Dkkc|Mb@xCfAWDAD@D@B?~@Y"}, {"2", "_ze_Dkkc|MfAhH"}, {"0", ""}, {"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"2", ""}, {"3", "}we_Dcbc|M]mCfAWDAD@D@B?~@Y"}, {"4", "wwe_Dabc|My@HB`@]H"}, {"0", ""}, {"7", "wwe_Dabc|Me@mCMRWRQHg@De@YUj@"}, {"7", "wwe_Dabc|Me@mCMRWRQHg@De@YUj@"}, {"7", "wwe_Dabc|Me@mCMRWRQHg@De@YUj@"}, {"7", "wwe_Dabc|Me@mCMRWRQHg@De@YUj@"}, {"7", "wwe_Dabc|Me@mCMRWRQHg@De@YUj@"}, {"7", "wwe_Dabc|Me@mCMRWRQHg@De@YUj@"}, {"7", "wwe_Dabc|Me@mCMRWRQHg@De@YUj@"}, {"7", "wwe_Dabc|Me@mCMRWRQHg@De@YUj@"}, {"7", "wwe_Dabc|Me@mCMRWRQHg@De@YUj@"}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"3", ""}, {"2", "}we_Dcbc|M]mCfAWDAD@D@B?~@Y"}, {"0", ""}, {"7", "y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"}, {"7", "y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"}, {"7", "y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"}, {"7", "y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"}, {"7", "y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"}, {"7", "y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"}, {"7", "y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"}, {"7", "y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"}, {"7", "y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"4", ""}, {"0", ""}, {"7", "y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"}, {"7", "y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"}, {"7", "y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"}, {"7", "y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"}, {"7", "y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"}, {"7", "y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"}, {"7", "y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"}, {"7", "y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"}, {"7", "y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"5", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"6", ""}, {"7", "y}e_Dcdc|M_@SEO"}, {"7", "y}e_Dcdc|M_@SEO"}, {"13", "uaf_Dmdc|MtAY"}, {"13", "uaf_Dmdc|MtAY"}, {"13", "uaf_Dmdc|MtAY"}, {"13", "uaf_Dmdc|MtAY"}, {"13", "uaf_Dmdc|MtAY"}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"7", ""}, {"8", "y}e_Dcdc|MS\\@P"}, {"8", "y}e_Dcdc|MS\\@P"}, {"8", "y}e_Dcdc|MS\\@P"}, {"8", "y}e_Dcdc|MS\\@P"}, {"6", "y}e_Dcdc|M_@SEO"}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"8", ""}, {"9", "i~e_Dubc|MwAZ"}, {"9", "i~e_Dubc|MwAZ"}, {"9", "i~e_Dubc|MwAZ"}, {"9", "i~e_Dubc|MwAZ"}, {"9", "i~e_Dubc|MwAZ"}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"9", ""}, {"10", "ecf_Deac|MbAS"}, {"10", "ecf_Deac|MbAS"}, {"13", "aaf_Dyac|MSqA"}, {"13", "aaf_Dyac|MSqA"}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"10", ""}, {"11", "ecf_Deac|MWFCQYQ"}, {"11", "ecf_Deac|MWFCQYQ"}, {"9", "ecf_Deac|MbAS"}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"11", ""}, {"12", "{cf_Dwcc|MSD@NK\\"}, {"12", "{cf_Dwcc|MSD@NK\\"}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"12", ""}, {"13", "uaf_Dmdc|MgAT"}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"13", ""}, {"0", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"14", ""}, {"0", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"15", ""}, {"0", ""}},
+                    {{"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"0", ""}, {"16", ""}}
             }
-
-        }
-
-        if(origin.equals("Administrative Block")){
-            if(dest.equals("Learning Resource Center")) {
-                List<LatLng> poly = decodePoly1("cze_Dskc|MJz@l@zD");
-
+    ;
+    private void getDirectionAS(int o, int d) {
+        while(o < d){
+            int nh = Integer.parseInt(p[o][d][0]);
+            if ( nh != d){
+                List<LatLng> poly = decodePoly1(p[o][nh][1]);
                 pathDrawn(poly);
-
+                o = nh;
+                if(o>d){
+                    int t = o;
+                    o=d;
+                    d=t;
+                }
             }
-            if(dest.equals("New Auditorium")){
-                List<LatLng> poly = decodePoly1("aze_Dskc|Md@nC@BB@hAMDA");
-
+            else{
+                List<LatLng> poly = decodePoly1(p[o][d][1]);
                 pathDrawn(poly);
-
-
-            }
-            if(dest.equals("B-Block/LT-1")){
-                List<LatLng> poly = decodePoly1("eze_Dokc|Mb@pCAD?B?BCDCBCBCBCBCDAB?@QL]B");
-
-                pathDrawn(poly);
-
-
+                o=d;
             }
         }
+//        placeToLatLng(origin);
+//        placeToLatLng(dest);
+//        if(origin.equals("Main Gate ") )
+//        {
+//                if(dest.equals("Administrative Block")) {
+//                    List<LatLng> poly = decodePoly1(path[0][0][1]);
+//                    pathDrawn(poly);
+//                }
+//                if(dest.equals("Learning Resource Center")) {
+//                    List<LatLng> poly = decodePoly1("cze_Dskc|MJz@l@zD");
+//
+//                    pathDrawn(poly);
+//                    getDirectionAS("Main Gate ","Administrative Block");
+//
+//                }
+//                 if(dest.equals("B-Block/LT-1")) {
+//
+//                getDirectionAS("Main Gate ","Administrative Block");
+//                     getDirectionAS("Administrative Block","B-Block/LT-1");
+//                }
+//                if(dest.equals("New Auditorium")) {
+//
+//                getDirectionAS("Main Gate ","Administrative Block");
+//                getDirectionAS("Administrative Block","New Auditorium");
+//                }
+//
+//
+//       }
+
+
 
 
 
@@ -546,11 +586,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                .position(lt2)
                 .title("LT-2")
                .icon(BitmapDescriptorFactory.fromResource(R.drawable.exhibition_map)));
-//       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
+      mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
 //        //move camera to fill the bound to screen
 //        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
 //
-        getDirectionAS(origin,destination);
+        int src = -1, dst = -1;
+        int n = locations.length;
+        for(int i = 0; i < n ; i++){
+            if(locations[i].equals(origin) || locations[i].equals(destination)){
+                src = i;
+                break;
+            }
+        }
+        for(int i = src + 1; i < n ; i++){
+            if(locations[i].equals(origin) || locations[i].equals(destination)){
+                dst = i;
+                break;
+            }
+        }
+        getDirectionAS(src, dst);
 //        //set zoom to level to current so that you won't be able to zoom out viz. move outside bounds
 //        mMap.setMinZoomPreference(mMap.getCameraPosition().zoom);
         mMap.setMapStyle(

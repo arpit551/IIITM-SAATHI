@@ -4,10 +4,7 @@ package com.f2w.arpit.college_map;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -89,17 +86,22 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<SearchModel> initData() {
         ArrayList<SearchModel> items = new ArrayList<>();
-        items.add(new SearchModel("Main Gate "));
+        items.add(new SearchModel("Main Gate"));
         items.add(new SearchModel("Administrative Block"));
-        items.add(new SearchModel("Learning Resource Center"));
+        items.add(new SearchModel("Learning Resource Center (LRC)"));
         items.add(new SearchModel("New Auditorium"));
-        items.add(new SearchModel("B-Block/LT-1"));
+        items.add(new SearchModel("Cafeteria Canteen"));
+        items.add(new SearchModel("Cricket Ground"));
         items.add(new SearchModel("A-Block"));
+        items.add(new SearchModel("B-Block/LT-1"));
         items.add(new SearchModel("C-Block"));
         items.add(new SearchModel("D-Block"));
         items.add(new SearchModel("E-Block"));
         items.add(new SearchModel("F-Block"));
+        items.add(new SearchModel("G-Block"));
+        items.add(new SearchModel("H-Block"));
         items.add(new SearchModel("Hospital"));
+        items.add(new SearchModel("Open Air Theatre (OAT)"));
         items.add(new SearchModel("Sports Complex"));
         return items;
     }
