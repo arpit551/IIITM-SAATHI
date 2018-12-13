@@ -417,7 +417,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    String[][][] p =
+  String[][][] p =
             {{	{"0",""},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"0",""},	{"0",""}	},
 {	{"0",""},	{"1",""},	{"2","_ze_Dkkc|MfAhH"},	{"3","_ze_Dkkc|Mb@xCfAWDAD@D@B?~@Y"},	{"2","_ze_Dkkc|MfAhH"},	{"2","_ze_Dkkc|MfAhH"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"14","_ze_Dkkc|M@FcBZQ@ODIJCNEPe@JBV"},	{"0",""},	{"0",""}	},
 {	{"0",""},	{"0",""},	{"2",""},	{"3","}we_Dcbc|M]mCfAWDAD@D@B?~@Y"},	{"4","wwe_Dabc|My@HB`@]H"},	{"5","wwe_Dabc|My@H@`@H`@x@hB"},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"0",""},	{"0",""}	},
@@ -438,11 +438,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 }
     ;
     private void getDirectionAS(int o, int d) {
-        while(o < d){
+        while(o != d){
             int nh = Integer.parseInt(p[o][d][0]);
             if ( nh != d){
+                if (o<nh){
                 List<LatLng> poly = decodePoly1(p[o][nh][1]);
-                pathDrawn(poly);
+                pathDrawn(poly);}
+                else{
+                    List<LatLng> poly = decodePoly1(p[nh][o][1]);
+                    pathDrawn(poly);
+                }
                 o = nh;
                 if(o>d){
                     int t = o;
