@@ -67,8 +67,17 @@ public class NavigationDrawer extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.hybrid) {
+
+        }
+        else if (id == R.id.satellite) {
+
+        }
+        else if (id == R.id.normal) {
+
+        }
+        else if (id == R.id.terrain) {
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -88,9 +97,11 @@ public class NavigationDrawer extends AppCompatActivity
 
         } else if (id == R.id.nav_manage) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.arp) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.pra) {
+
+        }else if (id == R.id.ari) {
 
         }
 

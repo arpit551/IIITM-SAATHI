@@ -235,8 +235,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.hybrid) {
+            mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            // Handle the camera action
+        } else if (id == R.id.satellite) {
+            mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+
+        } else if (id == R.id.normal) {
+            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+        } else if (id == R.id.terrain) {
+            mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -292,6 +302,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+
     @Override
     public boolean onNavigationItemSelected( MenuItem item) {
         // Handle navigation view item clicks here.
@@ -313,9 +324,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else if (id == R.id.nav_manage) {
             mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.arp) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.pra){
+
+        }
+         else if (id == R.id.ari){
 
         }
 

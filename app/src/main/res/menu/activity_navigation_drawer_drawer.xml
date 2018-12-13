@@ -7,31 +7,32 @@
         <item
             android:id="@+id/nav_camera"
             android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:title="Photo Gallery" />
         <item
             android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
+            android:icon="@drawable/toilet"
+            android:title="Mobile Toilets" />
         <item
             android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:icon="@drawable/hospital"
+            android:title="Ambulance" />
         <item
             android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:icon="@drawable/hospital"
+            android:title="Hospital" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="Developers">
         <menu>
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:id="@+id/arp"
+                android:title="Arpit Sharma" />
             <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:id="@+id/pra"
+                android:title="Prashant Rawat" />
+            <item
+                android:id="@+id/ari"
+                android:title="Arihant Jain" />
         </menu>
     </item>
 
