@@ -14,7 +14,7 @@
             android:title="Mobile Toilets" />
         <item
             android:id="@+id/nav_slideshow"
-            android:icon="@drawable/hospital"
+            android:icon="@drawable/ambulance"
             android:title="Ambulance" />
         <item
             android:id="@+id/nav_manage"
