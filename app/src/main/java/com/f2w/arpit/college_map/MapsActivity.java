@@ -503,6 +503,60 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             LatLng main_gate = new LatLng(26.25002, 78.17634);
             return main_gate;
         }
+        if(place.equals(locations[7]))
+        {
+
+            LatLng main_gate = new LatLng(26.25002, 78.17296);
+            return main_gate;
+        }
+        if(place.equals(locations[6]))
+        {
+
+            LatLng main_gate = new LatLng(26.25033608687278, 78.17326168608406);
+            return main_gate;
+        }
+        if(place.equals(locations[8]))
+        {
+
+            LatLng main_gate = new LatLng(26.25014, 78.17262);
+            return main_gate;
+        }
+        if(place.equals(locations[9]))
+        {
+
+            LatLng main_gate = new LatLng(26.25053, 78.17254);
+            return main_gate;
+        }
+        if(place.equals(locations[10]))
+        {
+
+            LatLng main_gate = new LatLng(26.25090, 78.17247);
+            return main_gate;
+        }
+        if(place.equals(locations[11]))
+        {
+
+            LatLng main_gate = new LatLng(26.25118, 78.17268);
+            return main_gate;
+        }
+        if(place.equals(locations[12]))
+        {
+
+            LatLng main_gate = new LatLng(26.25105, 78.17300);
+            return main_gate;
+        }
+        if(place.equals(locations[13]))
+        {
+
+            LatLng main_gate = new LatLng(26.25066, 78.17311);
+            return main_gate;
+        }
+
+
+
+
+
+
         return null;
     }
     private void pathDrawn(List<LatLng> poly){
@@ -698,6 +752,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                .position(lt2)
                 .title("LT-2")
                .icon(BitmapDescriptorFactory.fromResource(R.drawable.exhibition_map)));
+       char a='a';
+       for(int i=6;i<=13;i++) {
+
+           String mDrawableName = "letter_"+a;
+           int resID = getResources().getIdentifier(mDrawableName , "drawable", getPackageName());
+           LatLng block =placeToLatLng(locations[i]);
+           mMap.addMarker(new MarkerOptions()
+                   .position(block)
+                   .title(locations[i])
+
+                   .icon(BitmapDescriptorFactory.fromResource(resID)));
+           a++;
+       }
       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
 //        //move camera to fill the bound to screen
 //        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
