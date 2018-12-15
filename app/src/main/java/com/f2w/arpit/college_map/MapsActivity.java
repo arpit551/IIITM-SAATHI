@@ -2,6 +2,7 @@ package com.f2w.arpit.college_map;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -55,6 +56,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ir.mirrajabi.searchdialog.SimpleSearchDialogCompat;
+import ir.mirrajabi.searchdialog.core.BaseSearchDialogCompat;
+import ir.mirrajabi.searchdialog.core.SearchResultListener;
+import ir.mirrajabi.searchdialog.core.Searchable;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener , NavigationView.OnNavigationItemSelectedListener {
@@ -77,13 +83,65 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_drawer);
+        //My
+        final String[] destination = new String[1];
+        final String[] source = new String[1];
+
+        findViewById(R.id.origin).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick (View v) {
+                new SimpleSearchDialogCompat(MapsActivity.this, "Search...", "Where are you now ?",
+                        null, initData(), new SearchResultListener<Searchable>() {
+                    @Override
+                    public void onSelected(BaseSearchDialogCompat baseSearchDialogCompat, Searchable searchable, int i) {
+                        Toast.makeText(MapsActivity.this,""+searchable.getTitle(),Toast.LENGTH_SHORT).show();
+                        baseSearchDialogCompat.dismiss();
+                        source[0] =searchable.getTitle();
+
+                    }
+                }).show();
+
+            }
+        });
+        findViewById(R.id.dest).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick (View v) {
+                new SimpleSearchDialogCompat(MapsActivity.this, "Search...", "Where are you now ?",
+                        null, initData(), new SearchResultListener<Searchable>() {
+                    @Override
+                    public void onSelected(BaseSearchDialogCompat baseSearchDialogCompat, Searchable searchable, int i) {
+                        Toast.makeText(MapsActivity.this,""+searchable.getTitle(),Toast.LENGTH_SHORT).show();
+                        baseSearchDialogCompat.dismiss();
+                        destination[0] =searchable.getTitle();
+
+                    }
+                }).show();
+
+            }
+        });
+
+//        findViewById(R.id.go).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(MainActivity.this, MapsActivity.class);
+//                intent.putExtra("Destination", destination[0]);
+//                intent.putExtra("Origin", source[0]);
+//                startActivity(intent);
+//            }
+//
+//
+//        });
+
+        // MY end
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map1);
         mapFragment.getMapAsync(this);
         tvDistanceDuration = (TextView) findViewById(R.id.text);
         origin = getIntent().getStringExtra("Origin");
-        destination = getIntent().getStringExtra("Destination");
+       // destination = getIntent().getStringExtra("Destination");
         start = (Button) findViewById(R.id.start);
         start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,6 +190,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
+    // MYY
+    private ArrayList<SearchModel> initData(){
+        ArrayList<SearchModel> items = new ArrayList<>();
+        items.add(new SearchModel("Main Gate"));
+        items.add(new SearchModel("Administrative Block"));
+        items.add(new SearchModel("Learning Resource Center (LRC)"));
+        items.add(new SearchModel("New Auditorium"));
+        items.add(new SearchModel("Cafeteria Canteen"));
+        items.add(new SearchModel("Cricket Ground"));
+        items.add(new SearchModel("A-Block"));
+        items.add(new SearchModel("B-Block/LT-1"));
+        items.add(new SearchModel("C-Block"));
+        items.add(new SearchModel("D-Block"));
+        items.add(new SearchModel("E-Block"));
+        items.add(new SearchModel("F-Block"));
+        items.add(new SearchModel("G-Block"));
+        items.add(new SearchModel("H-Block"));
+        items.add(new SearchModel("Hospital"));
+        items.add(new SearchModel("Open Air Theatre (OAT)"));
+        items.add(new SearchModel("Sports Complex"));
+        return items;
+    }
+    //MYY end
 
     @Override
     protected void onResume() {
