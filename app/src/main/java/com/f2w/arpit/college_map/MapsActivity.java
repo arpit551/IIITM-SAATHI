@@ -98,8 +98,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_drawer);
         //My
-        final String[] destination = new String[1];
+        final String[] destination1 = new String[1];
         final String[] source = new String[1];
+        final Button orig=(Button)findViewById(R.id.origin);
+        final Button des=(Button)findViewById(R.id.dest);
 
         findViewById(R.id.origin).setOnClickListener(new View.OnClickListener()
         {
@@ -113,6 +115,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         baseSearchDialogCompat.dismiss();
                         source[0] =searchable.getTitle();
 
+                        orig.setText(source[0]);
                     }
                 }).show();
 
@@ -128,13 +131,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onSelected(BaseSearchDialogCompat baseSearchDialogCompat, Searchable searchable, int i) {
                         Toast.makeText(MapsActivity.this,""+searchable.getTitle(),Toast.LENGTH_SHORT).show();
                         baseSearchDialogCompat.dismiss();
-                        destination[0] =searchable.getTitle();
+                        destination1[0] =searchable.getTitle();
+                        des.setText(destination1[0]);
+
 
                     }
                 }).show();
 
             }
         });
+
 
 //        findViewById(R.id.go).setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -155,7 +161,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
         tvDistanceDuration = (TextView) findViewById(R.id.text);
         origin = getIntent().getStringExtra("Origin");
-       // destination = getIntent().getStringExtra("Destination");
+        destination = getIntent().getStringExtra("Destination");
+        if(origin!=null&&destination!=null){
+            orig.setText(origin);
+            des.setText(destination);
+        }
         start = (Button) findViewById(R.id.start);
         start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -171,29 +181,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this); //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
         if(mMap!=null)
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.go);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
+                intent.putExtra("Destination", destination1[0]);
+                intent.putExtra("Origin", source[0]);
+                startActivity(intent);
             }
         });
 
@@ -375,9 +375,42 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     boolean isMarkerRotating=false;
+    private void rotateMarker(final Marker marker, final float toRotation) {
+        if(!isMarkerRotating) {
+            final Handler handler = new Handler();
+            final long start = SystemClock.uptimeMillis();
+            final float startRotation = marker.getRotation();
+            final long duration = 2000;
+
+            final Interpolator interpolator = new LinearInterpolator();
+
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    isMarkerRotating = true;
+
+                    long elapsed = SystemClock.uptimeMillis() - start;
+                    float t = interpolator.getInterpolation((float) elapsed / duration);
+
+                    float rot = t * toRotation + (1 - t) * startRotation;
+
+                    float bearing =  -rot > 180 ? rot / 2 : rot;
+
+                    marker.setRotation(bearing);
+
+                    if (t < 1.0) {
+                        // Post again 16ms later.
+                        handler.postDelayed(this, 16);
+                    } else {
+                        isMarkerRotating = false;
+                    }
+                }
+            });
+        }
+    }
 
     public void animateMarker(final Marker marker, final LatLng toPosition,
-                              final boolean hideMarker,final float toRotation) {
+                              final boolean hideMarker) {
         final Handler handler = new Handler();
         final long start = SystemClock.uptimeMillis();
         Projection proj = mMap.getProjection();
@@ -411,37 +444,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
-        if (!isMarkerRotating) {
-            final Handler handler1 = new Handler();
-            final long start1 = SystemClock.uptimeMillis();
-            final float startRotation = marker.getRotation();
-            final long duration1 = 2000;
 
-            final Interpolator interpolator1 = new LinearInterpolator();
-
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    isMarkerRotating = true;
-
-                    long elapsed = SystemClock.uptimeMillis() - start1;
-                    float t = interpolator1.getInterpolation((float) elapsed / duration1);
-
-                    float rot = t * toRotation + (1 - t) * startRotation;
-
-                    float bearing = -rot > 180 ? rot / 2 : rot;
-
-                    marker.setRotation(bearing);
-
-                    if (t < 1.0) {
-                        // Post again 16ms later.
-                        handler1.postDelayed(this, 16);
-                    } else {
-                        isMarkerRotating = false;
-                    }
-                }
-            });
-        }
     }
     Marker start_marker;
 int j=1;
@@ -453,7 +456,7 @@ int j=1;
         CameraUpdate center =
                 CameraUpdateFactory.newLatLng(latLng);
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(18.0f);
-        double  init_distance= SphericalUtil.computeDistanceBetween(latLng, all_points.get(0));
+//        double  init_distance= SphericalUtil.computeDistanceBetween(latLng, all_points.get(0));
             TreeMap<Double,LatLng> map_latlng=new TreeMap<>();
         for(int i=0;i<all_points.size();i++){
 
@@ -500,7 +503,8 @@ int j=1;
           }
         }
         float bearing = (float) bearingBetweenLocations(latLng, right_point);
-        animateMarker(start_marker,latLng,false,bearing);
+        animateMarker(start_marker,latLng,false);
+        rotateMarker(start_marker,bearing);
         LatLng mlastlocation=latLng;
 
         mMap.moveCamera(center);
@@ -960,6 +964,19 @@ int j=1;
 //        mMap.setOnMyLocationClickListener(onMyLocationClickListener);
         enableMyLocationIfPermitted();
 
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this); //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
+
 
 
 
@@ -1008,7 +1025,6 @@ int j=1;
             a++;
 
         }
-        mMap.clear();
       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
