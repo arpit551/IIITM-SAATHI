@@ -5,11 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Point;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -27,6 +31,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,12 +43,16 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.SphericalUtil;
 
 import org.json.JSONObject;
 
@@ -55,6 +65,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import ir.mirrajabi.searchdialog.SimpleSearchDialogCompat;
 import ir.mirrajabi.searchdialog.core.BaseSearchDialogCompat;
@@ -75,9 +87,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Boolean flag1 = false;
     int flag2 = 2;
     String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "New Auditorium", "Cafeteria Canteen", "Cricket Ground", "A-Block", "B-Block/LT-1", "C-Block", "D-Block", "E-Block", "F-Block", "G-Block", "H-Block", "Hospital", "Open Air Theatre (OAT)", "Sports Complex"};
-
+    Boolean zoom_flag=true;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     SupportMapFragment mapFragment;
+
+    List<LatLng>all_points=new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,7 +182,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 0, this); //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this); //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
+        if(mMap!=null)
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -189,6 +205,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
     }
     // MYY
     private ArrayList<SearchModel> initData(){
@@ -213,6 +231,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return items;
     }
     //MYY end
+
 
     @Override
     protected void onResume() {
@@ -332,8 +351,101 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         return super.onOptionsItemSelected(item);
     }
+    private double bearingBetweenLocations(LatLng latLng1,LatLng latLng2) {
 
-    @Override
+        double PI = 3.14159;
+        double lat1 = latLng1.latitude * PI / 180;
+        double long1 = latLng1.longitude * PI / 180;
+        double lat2 = latLng2.latitude * PI / 180;
+        double long2 = latLng2.longitude * PI / 180;
+
+        double dLon = (long2 - long1);
+
+        double y = Math.sin(dLon) * Math.cos(lat2);
+        double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1)
+                * Math.cos(lat2) * Math.cos(dLon);
+
+        double brng = Math.atan2(y, x);
+
+        brng = Math.toDegrees(brng);
+        brng = (brng + 360) % 360;
+
+        return brng;
+    }
+
+
+    boolean isMarkerRotating=false;
+
+    public void animateMarker(final Marker marker, final LatLng toPosition,
+                              final boolean hideMarker,final float toRotation) {
+        final Handler handler = new Handler();
+        final long start = SystemClock.uptimeMillis();
+        Projection proj = mMap.getProjection();
+        Point startPoint = proj.toScreenLocation(marker.getPosition());
+        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
+        final long duration = 500;
+
+        final Interpolator interpolator = new LinearInterpolator();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                long elapsed = SystemClock.uptimeMillis() - start;
+                float t = interpolator.getInterpolation((float) elapsed
+                        / duration);
+                double lng = t * toPosition.longitude + (1 - t)
+                        * startLatLng.longitude;
+                double lat = t * toPosition.latitude + (1 - t)
+                        * startLatLng.latitude;
+                marker.setPosition(new LatLng(lat, lng));
+
+                if (t < 1.0) {
+                    // Post again 16ms later.
+                    handler.postDelayed(this, 16);
+                } else {
+                    if (hideMarker) {
+                        marker.setVisible(false);
+                    } else {
+                        marker.setVisible(true);
+                    }
+                }
+            }
+        });
+        if (!isMarkerRotating) {
+            final Handler handler1 = new Handler();
+            final long start1 = SystemClock.uptimeMillis();
+            final float startRotation = marker.getRotation();
+            final long duration1 = 2000;
+
+            final Interpolator interpolator1 = new LinearInterpolator();
+
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    isMarkerRotating = true;
+
+                    long elapsed = SystemClock.uptimeMillis() - start1;
+                    float t = interpolator1.getInterpolation((float) elapsed / duration1);
+
+                    float rot = t * toRotation + (1 - t) * startRotation;
+
+                    float bearing = -rot > 180 ? rot / 2 : rot;
+
+                    marker.setRotation(bearing);
+
+                    if (t < 1.0) {
+                        // Post again 16ms later.
+                        handler1.postDelayed(this, 16);
+                    } else {
+                        isMarkerRotating = false;
+                    }
+                }
+            });
+        }
+    }
+    Marker start_marker;
+int j=1;
+  @Override
     public void onLocationChanged(Location location) {if(flag1==true &&flag2==2) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         Log.d("data12", String.valueOf((location.getLatitude()))
@@ -341,15 +453,64 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         CameraUpdate center =
                 CameraUpdateFactory.newLatLng(latLng);
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(18.0f);
+        double  init_distance= SphericalUtil.computeDistanceBetween(latLng, all_points.get(0));
+            TreeMap<Double,LatLng> map_latlng=new TreeMap<>();
+        for(int i=0;i<all_points.size();i++){
+
+            double distance = SphericalUtil.computeDistanceBetween(latLng, all_points.get(i));
+            map_latlng.put(distance,all_points.get(i));
+
+
+        }
+
+        if(j==1)
+        start_marker=mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude()))
+              .title("Current Location")
+              .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow)));
+        j++;
+        Boolean place0=false,place1=false;
+        if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[0],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))){
+                place0=true;
+        }
+        if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[1],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))) {
+                place1 = true;
+        }
+        LatLng right_point = null;
+        if(place0==true&&place1==false){
+                 right_point =(LatLng) map_latlng.values().toArray()[0];
+
+        }
+        if(place1==true&&place0==false){
+                 right_point =(LatLng) map_latlng.values().toArray()[1];
+        }
+        if(place1==true&&place0==true){
+                if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[1],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween((LatLng) map_latlng.values().toArray()[0],placeToLatLng(destination))){
+                    right_point =(LatLng) map_latlng.values().toArray()[0];
+                }
+                else
+                    right_point =(LatLng) map_latlng.values().toArray()[0];
+        }
+        if(place0==false&&place1==false){
+          for(int i=2;i<map_latlng.size();i++){
+              if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[i],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination) )){
+                  right_point=(LatLng)map_latlng.values().toArray()[i];
+                  break;
+              }
+
+          }
+        }
+        float bearing = (float) bearingBetweenLocations(latLng, right_point);
+        animateMarker(start_marker,latLng,false,bearing);
+        LatLng mlastlocation=latLng;
 
         mMap.moveCamera(center);
         mMap.animateCamera(zoom);
     }
+
     else
     {
-      mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
+
     }
-//move map camera
     }
 
     @Override
@@ -573,6 +734,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             LatLng p = new LatLng((((double) lat / 1E5)),
                     (((double) lng / 1E5)));
+            all_points.add(p);
             poly.add(p);
         }
         return poly;
@@ -647,21 +809,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         points = new ArrayList<LatLng>();
         for (int l = 0; l <poly.size(); l++) {
-
             points.add(poly.get(l));
             p = new PolylineOptions();
             p.addAll(points);
             p.width(14);
             p.color(Color.BLUE);
-
         }
         mMap.addPolyline(p);
-
     }
 
   String[][][] p =
             {{	{"0",""},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"16",""},	{"16","q}e_Dwxc|MJp@H?HBFDBD@F@JnCq@B?B?B?@?H@RDDB|EtCB@B?BABA@AvH~DBH?@?DcAzEe@rB"}	},
-{	{"0",""},	{"1",""},	{"2","_ze_Dkkc|MfAhH"},	{"3","_ze_Dkkc|Mb@xCfAWDAD@D@B?~@Y"},	{"2",""},	{"2",""},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"14","_ze_Dkkc|M@FcBZQ@ODIJCNEPe@JBV"},	{"16",""}	{"16","_ze_Dkkc|MmAwHAEBA@A@A@A@C@C@C?AlCs@B?B?B?@?H@RDDB|EtCB@B?BABA@AvH~DBH?@?DcAzEe@rB"}	},
+{	{"0",""},	{"1",""},	{"2","_ze_Dkkc|MfAhH"},	{"3","_ze_Dkkc|Mb@xCfAWDAD@D@B?~@Y"},	{"2",""},	{"2",""},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"14","_ze_Dkkc|M@FcBZQ@ODIJCNEPe@JBV"},	{"16",""},	{"16","_ze_Dkkc|MmAwHAEBA@A@A@A@C@C@C?AlCs@B?B?B?@?H@RDDB|EtCB@B?BABA@AvH~DBH?@?DcAzEe@rB"}	},
 {	{"0",""},	{"0",""},	{"2",""},	{"3","}we_Dcbc|M]mCfAWDAD@D@B?~@Y"},	{"4","wwe_Dabc|My@HB`@]H"},	{"5","wwe_Dabc|My@H@`@H`@x@hB"},	{"7",""},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"1",""},	{"1",""},	},
 {	{"0",""},	{"0",""},	{"0",""},	{"3",""},	{"2","}we_Dcbc|M]mCfAWDAD@D@B?~@Y"},	{"5","}se_Dahc|M?F?D@BBBBBD?BAHZTEPFiCpGGb@MB"},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"1",""},	{"1",""},	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"4",""},	{"5","ize_Dm`c|MLCtAbC"},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"2",""},	{"2",""},	},
@@ -679,12 +838,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"16",""}	}
 }
     ;
+
     private void getDirectionAS(int o, int d) {
         while(o != d){
             int nh = Integer.parseInt(p[o][d][0]);
             if ( nh != d){
                 if (o<nh){
                 List<LatLng> poly = decodePoly1(p[o][nh][1]);
+
                 pathDrawn(poly);}
                 else{
                     List<LatLng> poly = decodePoly1(p[nh][o][1]);
@@ -829,24 +990,37 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        //set latlong bounds
        LatLng lt2 = new LatLng(26.249759, 78.172947);
 //        mMap.setLatLngBoundsForCameraTarget(bounds);
-       mMap.addMarker(new MarkerOptions()
-               .position(lt2)
-                .title("LT-2")
-               .icon(BitmapDescriptorFactory.fromResource(R.drawable.exhibition_map)));
-       char a='a';
-       for(int i=6;i<=13;i++) {
+      final List<Marker> blocks_list=new ArrayList<>();
+        char a='a';
+        for(int i=6;i<=13;i++) {
+            Marker marker;
+            String mDrawableName = "letter_"+a;
+            int resID = getResources().getIdentifier(mDrawableName , "drawable", getPackageName());
+            LatLng block =placeToLatLng(locations[i]);
 
-           String mDrawableName = "letter_"+a;
-           int resID = getResources().getIdentifier(mDrawableName , "drawable", getPackageName());
-           LatLng block =placeToLatLng(locations[i]);
-           mMap.addMarker(new MarkerOptions()
-                   .position(block)
-                   .title(locations[i])
+            marker=mMap.addMarker(new MarkerOptions()
+                    .position(block)
+                    .title(locations[i])
 
-                   .icon(BitmapDescriptorFactory.fromResource(resID)));
-           a++;
-       }
+                    .icon(BitmapDescriptorFactory.fromResource(resID)));
+            marker.setVisible(false);
+            blocks_list.add(marker);
+            a++;
+
+        }
+        mMap.clear();
       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
+        mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+                if(mMap.getCameraPosition().zoom>14){
+                    for(Marker m:blocks_list) {
+                      m.setVisible(true);
+                    }
+                }
+            }
+        });
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
 //        //move camera to fill the bound to screen
 //        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding));
 //
@@ -904,6 +1078,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     LOCATION_PERMISSION_REQUEST_CODE);
         } else if (mMap != null) {
             mMap.setMyLocationEnabled(true);
+
+            mMap.getUiSettings().setMyLocationButtonEnabled(true);
         }
     }
 
