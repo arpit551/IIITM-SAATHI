@@ -52,7 +52,9 @@
                         android:layout_marginTop="5dp"
                         android:visibility="visible"
                         android:hint="    Your Destiation Location"
-                        app:showAsAction="ifRoom|collapseActionView" />
+                        app:showAsAction="ifRoom|collapseActionView"
+
+                        />
                 </LinearLayout>
 
 
@@ -75,7 +77,9 @@
             <!--app:showAsAction="ifRoom|collapseActionView" />-->
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_navigation_drawer" />
+    <include
+        android:id="@+id/include"
+        layout="@layout/content_navigation_drawer" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/go"
@@ -86,6 +90,33 @@
         app:srcCompat="@drawable/go"
         app:fabSize="normal"
         app:maxImageSize="67dp"
+        />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_margin="@dimen/fab_margin"
+        app:srcCompat="@drawable/stop"
+        android:backgroundTint="#00ffffff"
+        app:fabSize="normal"
+        app:elevation="0dp"
+        app:maxImageSize="56dp"
+
+        android:visibility="invisible"
+        />
+
+    <Button
+        android:id="@+id/start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start "
+        app:layout_anchor="@+id/include"
+        app:layout_anchorGravity="left|bottom"
+        android:background="@drawable/layout1"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="invisible"
         />
 
 </android.support.design.widget.CoordinatorLayout>

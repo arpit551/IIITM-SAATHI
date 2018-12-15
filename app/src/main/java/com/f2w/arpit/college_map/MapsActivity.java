@@ -83,15 +83,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     TextView tvDistanceDuration;
     String origin, destination;
     private LocationManager locationManager;
-    Button start, stop;
+    Button start;
     Boolean flag1 = false;
     int flag2 = 2;
     String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "New Auditorium", "Cafeteria Canteen", "Cricket Ground", "A-Block", "B-Block/LT-1", "C-Block", "D-Block", "E-Block", "F-Block", "G-Block", "H-Block", "Hospital", "Open Air Theatre (OAT)", "Sports Complex"};
     Boolean zoom_flag=true;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     SupportMapFragment mapFragment;
-
-    List<LatLng>all_points=new ArrayList<>();
+    List<LatLng>all_points=new ArrayList<LatLng>();
+int flag_for_start=0;
+    FloatingActionButton stop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +154,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
 //
 //        });
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.go);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
+                intent.putExtra("Destination", destination1[0]);
+                intent.putExtra("Origin", source[0]);
+                intent.putExtra("flag_for_start","true");
+                startActivity(intent);
 
+            }
+        });
         // MY end
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -162,40 +174,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         tvDistanceDuration = (TextView) findViewById(R.id.text);
         origin = getIntent().getStringExtra("Origin");
         destination = getIntent().getStringExtra("Destination");
+        String a=getIntent().getStringExtra("flag_for_start");
+        if(getIntent().getStringExtra("flag_for_start")!=null)
+        flag_for_start= 1;
         if(origin!=null&&destination!=null){
             orig.setText(origin);
             des.setText(destination);
         }
         start = (Button) findViewById(R.id.start);
-        start.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                flag1 = true;
-            }
-        });
-        stop = (Button) findViewById(R.id.stop);
+         stop = (FloatingActionButton) findViewById(R.id.stop);
+        stop = (FloatingActionButton) findViewById(R.id.stop);
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 flag2 = 1;
             }
         });
+        if(flag_for_start==1)
+            start.setVisibility(View.VISIBLE);
+        else
+            start.setVisibility(View.INVISIBLE);
+        start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                flag1 = true;
+                stop.show();
+            }
+        });
+
 
         if(mMap!=null)
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.go);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
-                intent.putExtra("Destination", destination1[0]);
-                intent.putExtra("Origin", source[0]);
-                startActivity(intent);
-            }
-        });
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -502,13 +515,22 @@ int j=1;
 
           }
         }
-        float bearing = (float) bearingBetweenLocations(latLng, right_point);
+        float bearing = (float) bearingBetweenLocations((LatLng) map_latlng.values().toArray()[0], (LatLng) map_latlng.values().toArray()[1]);
+
         animateMarker(start_marker,latLng,false);
-        rotateMarker(start_marker,bearing);
+//        rotateMarker(start_marker,bearing);
         LatLng mlastlocation=latLng;
 
-        mMap.moveCamera(center);
-        mMap.animateCamera(zoom);
+      CameraPosition newCamPos = new CameraPosition.Builder()
+              .target(latLng)      // Sets the center of the map to Mountain View
+              .zoom(19)                   // Sets the zoom
+              .bearing(bearing)                // Sets the orientation of the camera to east
+              .tilt(45)                   // Sets the tilt of the camera to 30 degrees
+              .build();
+      mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCamPos));
+
+//        mMap.moveCamera(center);
+//        mMap.animateCamera(zoom);
     }
 
     else
