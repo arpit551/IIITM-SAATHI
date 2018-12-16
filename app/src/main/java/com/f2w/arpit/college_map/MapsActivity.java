@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -13,7 +14,9 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -39,6 +42,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -52,7 +62,10 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.SphericalUtil;
+import com.google.maps.android.ui.IconGenerator;
 
 import org.json.JSONObject;
 
@@ -73,26 +86,31 @@ import ir.mirrajabi.searchdialog.core.BaseSearchDialogCompat;
 import ir.mirrajabi.searchdialog.core.SearchResultListener;
 import ir.mirrajabi.searchdialog.core.Searchable;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener , NavigationView.OnNavigationItemSelectedListener {
+import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
+
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,  NavigationView.OnNavigationItemSelectedListener {
 
     private GoogleMap mMap;
     GoogleMap map;
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
     String origin, destination;
-    private LocationManager locationManager;
+    private LocationRequest mLocationRequest;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
+    private long UPDATE_INTERVAL = 1000;  /* 10 secs */
+    private long FASTEST_INTERVAL = 1000; /* 2 sec */
+
     Button start;
     Boolean flag1 = false;
     int flag2 = 2;
     String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "New Auditorium", "Cafeteria Canteen", "Cricket Ground", "A-Block", "B-Block/LT-1", "C-Block", "D-Block", "E-Block", "F-Block", "G-Block", "H-Block", "Hospital", "Open Air Theatre (OAT)", "Sports Complex"};
-    Boolean zoom_flag=true;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    Boolean zoom_flag = true;
     SupportMapFragment mapFragment;
-    List<LatLng>all_points=new ArrayList<LatLng>();
-int flag_for_start=0;
+    List<LatLng> all_points = new ArrayList<LatLng>();
+    int flag_for_start = 0;
     FloatingActionButton stop;
+    private String provider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,20 +119,19 @@ int flag_for_start=0;
         //My
         final String[] destination1 = new String[1];
         final String[] source = new String[1];
-        final Button orig=(Button)findViewById(R.id.origin);
-        final Button des=(Button)findViewById(R.id.dest);
+        final Button orig = (Button) findViewById(R.id.origin);
+        final Button des = (Button) findViewById(R.id.dest);
 
-        findViewById(R.id.origin).setOnClickListener(new View.OnClickListener()
-        {
+        findViewById(R.id.origin).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 new SimpleSearchDialogCompat(MapsActivity.this, "Search...", "Where are you now ?",
                         null, initData(), new SearchResultListener<Searchable>() {
                     @Override
                     public void onSelected(BaseSearchDialogCompat baseSearchDialogCompat, Searchable searchable, int i) {
-                        Toast.makeText(MapsActivity.this,""+searchable.getTitle(),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MapsActivity.this, "" + searchable.getTitle(), Toast.LENGTH_SHORT).show();
                         baseSearchDialogCompat.dismiss();
-                        source[0] =searchable.getTitle();
+                        source[0] = searchable.getTitle();
 
                         orig.setText(source[0]);
                     }
@@ -122,17 +139,16 @@ int flag_for_start=0;
 
             }
         });
-        findViewById(R.id.dest).setOnClickListener(new View.OnClickListener()
-        {
+        findViewById(R.id.dest).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick (View v) {
+            public void onClick(View v) {
                 new SimpleSearchDialogCompat(MapsActivity.this, "Search...", "Where are you now ?",
                         null, initData(), new SearchResultListener<Searchable>() {
                     @Override
                     public void onSelected(BaseSearchDialogCompat baseSearchDialogCompat, Searchable searchable, int i) {
-                        Toast.makeText(MapsActivity.this,""+searchable.getTitle(),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MapsActivity.this, "" + searchable.getTitle(), Toast.LENGTH_SHORT).show();
                         baseSearchDialogCompat.dismiss();
-                        destination1[0] =searchable.getTitle();
+                        destination1[0] = searchable.getTitle();
                         des.setText(destination1[0]);
 
 
@@ -161,13 +177,17 @@ int flag_for_start=0;
                 Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
                 intent.putExtra("Destination", destination1[0]);
                 intent.putExtra("Origin", source[0]);
-                intent.putExtra("flag_for_start","true");
+                if (source[0] != null && destination1[0] != null)
+                    intent.putExtra("flag_for_start", "true");
                 startActivity(intent);
 
             }
         });
         // MY end
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+        startLocationUpdates();
+
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map1);
         mapFragment.getMapAsync(this);
@@ -180,16 +200,10 @@ int flag_for_start=0;
         if(origin!=null&&destination!=null){
             orig.setText(origin);
             des.setText(destination);
+
         }
+
         start = (Button) findViewById(R.id.start);
-         stop = (FloatingActionButton) findViewById(R.id.stop);
-        stop = (FloatingActionButton) findViewById(R.id.stop);
-        stop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                flag2 = 1;
-            }
-        });
         if(flag_for_start==1)
             start.setVisibility(View.VISIBLE);
         else
@@ -199,6 +213,16 @@ int flag_for_start=0;
             public void onClick(View view) {
                 flag1 = true;
                 stop.show();
+                start.setVisibility(View.INVISIBLE);
+            }
+        });
+
+         stop = (FloatingActionButton) findViewById(R.id.stop);
+        stop = (FloatingActionButton) findViewById(R.id.stop);
+        stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                flag2 = 1;
             }
         });
 
@@ -281,48 +305,7 @@ int flag_for_start=0;
         return url;
     }
 
-    /**
-     * A method to download json data from url
-     */
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(strUrl);
 
-            // Creating an http connection to communicate with url
-            urlConnection = (HttpURLConnection) url.openConnection();
-
-            // Connecting to url
-            urlConnection.connect();
-
-            // Reading data from url
-            iStream = urlConnection.getInputStream();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-            StringBuffer sb = new StringBuffer();
-
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-
-            data = sb.toString();
-
-            br.close();
-
-        } catch (Exception e) {
-            Log.d("Exception ", e.toString());
-        } finally {
-            iStream.close();
-            urlConnection.disconnect();
-        }
-        Log.d("data12", data);
-
-        return data;
-    }
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -461,7 +444,51 @@ int flag_for_start=0;
     }
     Marker start_marker;
 int j=1;
-  @Override
+    protected void startLocationUpdates() {
+
+        // Create the location request to start receiving updates
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+        mLocationRequest.setSmallestDisplacement(1);
+
+        // Create LocationSettingsRequest object using location request
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        // Check whether location settings are satisfied
+        // https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
+        SettingsClient settingsClient = LocationServices.getSettingsClient(this);
+        settingsClient.checkLocationSettings(locationSettingsRequest);
+
+        // new Google API SDK v11 uses getFusedLocationProviderClient(this)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        getFusedLocationProviderClient(this).requestLocationUpdates(mLocationRequest, new LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        // do work here
+                        onLocationChanged(locationResult.getLastLocation());
+                    }
+                },
+                Looper.myLooper());
+    }
     public void onLocationChanged(Location location) {if(flag1==true &&flag2==2) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         Log.d("data12", String.valueOf((location.getLatitude()))
@@ -470,7 +497,7 @@ int j=1;
                 CameraUpdateFactory.newLatLng(latLng);
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(18.0f);
 //        double  init_distance= SphericalUtil.computeDistanceBetween(latLng, all_points.get(0));
-            TreeMap<Double,LatLng> map_latlng=new TreeMap<>();
+        TreeMap<Double,LatLng> map_latlng=new TreeMap<>();
         for(int i=0;i<all_points.size();i++){
 
             double distance = SphericalUtil.computeDistanceBetween(latLng, all_points.get(i));
@@ -480,54 +507,78 @@ int j=1;
         }
 
         if(j==1)
-        start_marker=mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude()))
-              .title("Current Location")
-              .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow)));
+            start_marker=mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude()))
+                    .title("Current Location")
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow)));
         j++;
-        Boolean place0=false,place1=false;
-        if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[0],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))){
-                place0=true;
-        }
-        if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[1],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))) {
-                place1 = true;
-        }
-        LatLng right_point = null;
-        if(place0==true&&place1==false){
-                 right_point =(LatLng) map_latlng.values().toArray()[0];
+        LatLng ahead_point=null,behind_point=null;
 
+        for(int i=0;i<map_latlng.size();i++){
+            if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[i],placeToLatLng(destination))>SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))){
+                if(ahead_point==null)
+                ahead_point =(LatLng) map_latlng.values().toArray()[i];
+            }
+            if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[i],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))){
+                if(behind_point==null)
+                behind_point =(LatLng) map_latlng.values().toArray()[i];
+            }
+            if(ahead_point!=null&&behind_point!=null)
+                break;
         }
-        if(place1==true&&place0==false){
-                 right_point =(LatLng) map_latlng.values().toArray()[1];
+//        Boolean place0=false,place1=false;
+//        if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[0],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))){
+//            place0=true;
+//        }
+//        if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[1],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))) {
+//            place1 = true;
+//        }
+//        LatLng right_point = null;
+//        if(place0==true&&place1==false){
+//            right_point =(LatLng) map_latlng.values().toArray()[0];
+//
+//        }
+//        if(place1==true&&place0==false){
+//            right_point =(LatLng) map_latlng.values().toArray()[1];
+//        }
+//        if(place1==true&&place0==true){
+//            if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[1],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween((LatLng) map_latlng.values().toArray()[0],placeToLatLng(destination))){
+//                right_point =(LatLng) map_latlng.values().toArray()[0];
+//            }
+//            else
+//                right_point =(LatLng) map_latlng.values().toArray()[0];
+//        }
+//        if(place0==false&&place1==false){
+//            for(int i=2;i<map_latlng.size();i++){
+//                if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[i],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination) )){
+//                    right_point=(LatLng)map_latlng.values().toArray()[i];
+//                    break;
+//                }
+//
+//            }
+//        }
+        if(ahead_point==null)
+        {
+            ahead_point=placeToLatLng(destination);
         }
-        if(place1==true&&place0==true){
-                if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[1],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween((LatLng) map_latlng.values().toArray()[0],placeToLatLng(destination))){
-                    right_point =(LatLng) map_latlng.values().toArray()[0];
-                }
-                else
-                    right_point =(LatLng) map_latlng.values().toArray()[0];
+        if(behind_point==null)
+        {
+           behind_point=placeToLatLng(origin);
         }
-        if(place0==false&&place1==false){
-          for(int i=2;i<map_latlng.size();i++){
-              if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[i],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination) )){
-                  right_point=(LatLng)map_latlng.values().toArray()[i];
-                  break;
-              }
 
-          }
-        }
-        float bearing = (float) bearingBetweenLocations((LatLng) map_latlng.values().toArray()[0], (LatLng) map_latlng.values().toArray()[1]);
+        float bearing = (float) bearingBetweenLocations(ahead_point, behind_point);
 
         animateMarker(start_marker,latLng,false);
 //        rotateMarker(start_marker,bearing);
         LatLng mlastlocation=latLng;
 
-      CameraPosition newCamPos = new CameraPosition.Builder()
-              .target(latLng)      // Sets the center of the map to Mountain View
-              .zoom(19)                   // Sets the zoom
-              .bearing(bearing)                // Sets the orientation of the camera to east
-              .tilt(45)                   // Sets the tilt of the camera to 30 degrees
-              .build();
-      mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCamPos));
+
+        CameraPosition newCamPos = new CameraPosition.Builder()
+                .target(latLng)      // Sets the center of the map to Mountain View
+                .zoom(19)                   // Sets the zoom
+                .bearing(bearing)                // Sets the orientation of the camera to east
+                .tilt(45)                   // Sets the tilt of the camera to 30 degrees
+                .build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCamPos));
 
 //        mMap.moveCamera(center);
 //        mMap.animateCamera(zoom);
@@ -539,36 +590,14 @@ int j=1;
     }
     }
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
 
+
+
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
     }
 
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
 
 
     @Override
@@ -606,129 +635,6 @@ int j=1;
         return true;
     }
 
-    // Fetches data from url passed
-    private class DownloadTask extends AsyncTask<String, Void, String> {
-
-        // Downloading data in non-ui thread
-        @Override
-        protected String doInBackground(String... url) {
-
-            // For storing data from web service
-            String data = "";
-
-            try {
-                // Fetching the data from web service
-                data = downloadUrl(url[0]);
-            } catch (Exception e) {
-                Log.d("Background Task", e.toString());
-            }
-            Log.d("data", data);
-            return data;
-        }
-
-        // Executes in UI thread, after the execution of
-        // doInBackground()
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            ParserTask parserTask = new ParserTask();
-
-            // Invokes the thread for parsing the JSON data
-            parserTask.execute(result);
-
-            Log.d("result", result);
-        }
-    }
-
-    /**
-     * A class to parse the Google Places in JSON format
-     */
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
-
-        // Parsing the data in non-ui thread
-        @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
-
-            JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
-
-            try {
-                jObject = new JSONObject(jsonData[0]);
-                DirectionsJSONParser parser = new DirectionsJSONParser();
-
-                // Starts parsing data
-                routes = parser.parse(jObject);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return routes;
-        }
-
-        // Executes in UI thread, after the parsing process
-        @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points = null;
-            PolylineOptions lineOptions = null;
-            MarkerOptions markerOptions = new MarkerOptions();
-            String distance = "";
-            String duration = "";
-
-
-            if (result.size() < 1) {
-                Toast.makeText(getBaseContext(), "No Points", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Traversing through all the routes
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList<LatLng>();
-                lineOptions = new PolylineOptions();
-
-                // Fetching i-th route
-                List<HashMap<String, String>> path = result.get(i);
-
-                // Fetching all the points in i-th route
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
-
-                    if (j == 0) {    // Get distance from the list
-                        distance = (String) point.get("distance");
-                        continue;
-                    } else if (j == 1) { // Get duration from the list
-                        duration = (String) point.get("duration");
-                        continue;
-                    }
-
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-
-                    points.add(position);
-                }
-
-                // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(3);
-                lineOptions.color(Color.RED);
-            }
-
-            tvDistanceDuration.setText("Distance:" + distance + ", Duration:" + duration);
-
-            // Drawing polyline in the Google Map for the i-th route
-            mMap.addPolyline(lineOptions);
-        }
-    }
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     /*
     me
      */
@@ -820,8 +726,56 @@ int j=1;
             LatLng main_gate = new LatLng(26.25066, 78.17311);
             return main_gate;
         }
+        if(place.equals(locations[0]))//mg
+        {
 
+            LatLng main_gate = new LatLng(26.25008, 78.17640);
+            return main_gate;
+        }if(place.equals(locations[1]))//ad
+        {
 
+            LatLng main_gate = new LatLng(26.24942, 78.17403);
+            return main_gate;
+        }
+        if(place.equals(locations[2]))//lrc
+        {
+
+            LatLng main_gate = new LatLng(26.24909, 78.17265);
+            return main_gate;
+        }
+        if(place.equals(locations[3]))//na
+        {
+
+            LatLng main_gate = new LatLng(26.24846, 78.17360);
+            return main_gate;
+        } if(place.equals(locations[4]))//cafe
+        {
+
+            LatLng main_gate = new LatLng(26.24950, 78.17238);
+            return main_gate;
+        } if(place.equals(locations[5]))//cr
+        {
+
+            LatLng main_gate = new LatLng(26.24888, 78.17161);
+            return main_gate;
+        }
+
+        if(place.equals(locations[14]))//hosp
+        {
+
+            LatLng main_gate = new LatLng(26.25036, 78.17352);
+            return main_gate;
+        }if(place.equals(locations[15]))//oat
+        {
+
+            LatLng main_gate = new LatLng(26.24636, 78.17207);
+            return main_gate;
+        }if(place.equals(locations[16]))//sports
+        {
+
+            LatLng main_gate = new LatLng(26.24655, 78.17255);
+            return main_gate;
+        }
 
 
 
@@ -929,78 +883,11 @@ int j=1;
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        startLocationUpdates();
+
         markerPoints = new ArrayList<LatLng>();
-        // Enable MyLocation Button in the Map
 
-        // Setting onclick event listener for the map
-//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-//
-//            @Override
-//            public void onMapClick(LatLng point) {
-//
-//                // Already two locations
-//                if (markerPoints.size() > 1) {
-//                    markerPoints.clear();
-//                    mMap.clear();
-//                }
-//
-//                // Adding new item to the ArrayList
-//                markerPoints.add(point);
-//
-//                // Creating MarkerOptions
-//                MarkerOptions options = new MarkerOptions();
-//
-//                // Setting the position of the marker
-//                options.position(point);
-//
-//                /**
-//                 * For the start location, the color of marker is GREEN and
-//                 * for the end location, the color of marker is RED.
-//                 */
-//                if (markerPoints.size() == 1) {
-//                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-//                } else if (markerPoints.size() == 2) {
-//                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-//                }
-//
-//                // Add new marker to the Google Map Android API V2
-//                mMap.addMarker(options);
-//
-//                // Checks, whether start and end locations are captured
-//                if (markerPoints.size() >= 2) {
-//                    LatLng origin = markerPoints.get(0);
-//                    LatLng dest = markerPoints.get(1);
-//
-//                    // Getting URL to the Google Directions API
-//                    String url = getDirectionsUrl(origin, dest);
-//
-//                    DownloadTask downloadTask = new DownloadTask();
-//
-//                    // Start downloading json data from Google Directions API
-//                    downloadTask.execute(url);
-//                }
-//            }
-//        });
-////location
-//        mMap.setOnMyLocationButtonClickListener(onMyLocationButtonClickListener);
-//        mMap.setOnMyLocationClickListener(onMyLocationClickListener);
         enableMyLocationIfPermitted();
-
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this); //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
-
-
-
 
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.setMinZoomPreference(11);
@@ -1031,6 +918,7 @@ int j=1;
 //        mMap.setLatLngBoundsForCameraTarget(bounds);
       final List<Marker> blocks_list=new ArrayList<>();
         char a='a';
+        if(origin==null&&destination==null)
         for(int i=6;i<=13;i++) {
             Marker marker;
             String mDrawableName = "letter_"+a;
@@ -1047,7 +935,11 @@ int j=1;
             a++;
 
         }
-      mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(26.249994, 78.176121),17));
+        if(origin!=null)
+      mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng(origin).latitude, placeToLatLng(origin).longitude),17));
+        else
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng("Main Gate").latitude, placeToLatLng("Main Gate").longitude),17));
+
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
@@ -1079,9 +971,9 @@ int j=1;
         getDirectionAS(src, dst);
 //        //set zoom to level to current so that you won't be able to zoom out viz. move outside bounds
 //        mMap.setMinZoomPreference(mMap.getCameraPosition().zoom);
-//        mMap.setMapStyle(
-//                MapStyleOptions.loadRawResourceStyle(
-//                        this, R.raw.style_json));
+        mMap.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                        this, R.raw.style_json));
         ArrayList<LatLng> points = null;
         PolylineOptions audi_lrc= null;
         points = new ArrayList<LatLng>();
@@ -1099,6 +991,25 @@ int j=1;
         audi_lrc.addAll(points);
         audi_lrc.width(16);
         audi_lrc.color(Color.WHITE);
+        IconGenerator iconFactory = new IconGenerator(this);
+        if(origin!=null&&destination!=null) {
+            iconFactory.setBackground(getDrawable(R.color.icon));
+            iconFactory.setTextAppearance(R.style.iconGenText);
+
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(origin)))
+                    .position(placeToLatLng(origin))
+                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
+                    ;
+
+            mMap.addMarker(markerOptions);
+            MarkerOptions markerOptions1 = new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(destination)))
+                    .position(placeToLatLng(destination))
+                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
+
+            mMap.addMarker(markerOptions1);
+        }
 
        // mMap.addPolyline(audi_lrc);
 
@@ -1146,31 +1057,4 @@ int j=1;
         }
     }
 
-//    private GoogleMap.OnMyLocationButtonClickListener onMyLocationButtonClickListener =
-//            new GoogleMap.OnMyLocationButtonClickListener() {
-//                @Override
-//                public boolean onMyLocationButtonClick() {
-//                    mMap.setMinZoomPreference(15);
-//                    return false;
-//                }
-//            };
-
-//    private GoogleMap.OnMyLocationClickListener onMyLocationClickListener =
-//            new GoogleMap.OnMyLocationClickListener() {
-//                @Override
-//                public void onMyLocationClick(@NonNull Location location) {
-//
-//                    mMap.setMinZoomPreference(12);
-//
-//                    CircleOptions circleOptions = new CircleOptions();
-//                    circleOptions.center(new LatLng(location.getLatitude(),
-//                            location.getLongitude()));
-//
-//                    circleOptions.radius(200);
-//                    circleOptions.fillColor(Color.RED);
-//                    circleOptions.strokeWidth(6);
-//
-//                    mMap.addCircle(circleOptions);
-//                }
-//            };
 }
