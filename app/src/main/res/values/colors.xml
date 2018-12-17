@@ -4,4 +4,5 @@
     <color name="colorPrimaryDark">#00574b</color>
     <color name="colorAccent">#00574b</color>
     <color name="icon">#0078000a</color>
+  <color name="hospital">#f72100</color>
 </resources>

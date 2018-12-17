@@ -20,6 +20,15 @@
             android:id="@+id/nav_manage"
             android:icon="@drawable/hospital"
             android:title="Hospital" />
+
+        <item
+            android:id="@+id/lables"
+            android:icon="@drawable/hospital"
+            android:title="Show Labels" />
+        <item
+            android:id="@+id/map"
+            android:icon="@drawable/hospital"
+            android:title="Show Map" />
     </group>
 
     <item android:title="Developers">

@@ -94,12 +94,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     GoogleMap map;
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
-    String origin, destination;
+    String origin=null, destination=null;
     private LocationRequest mLocationRequest;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     private long UPDATE_INTERVAL = 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 1000; /* 2 sec */
+    boolean hospital_flag=false,mobile_toilet_flag=false,ambulance_flag=false;
 
     Button start;
     Boolean flag1 = false;
@@ -110,7 +111,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     List<LatLng> all_points = new ArrayList<LatLng>();
     int flag_for_start = 0;
     FloatingActionButton stop;
-    private String provider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +121,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final String[] source = new String[1];
         final Button orig = (Button) findViewById(R.id.origin);
         final Button des = (Button) findViewById(R.id.dest);
+        if(orig.getText().toString()!="    Your Current Location")
+            origin=orig.getText().toString();
+        if(des.getText().toString()!="    Your Destiation Location")
+            destination=orig.getText().toString();
 
         findViewById(R.id.origin).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -157,8 +161,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         });
-
-
 //        findViewById(R.id.go).setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
@@ -175,10 +177,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
-                intent.putExtra("Destination", destination1[0]);
-                intent.putExtra("Origin", source[0]);
-                if (source[0] != null && destination1[0] != null)
+                intent.putExtra("Destination", des.getText().toString());
+                intent.putExtra("Origin", orig.getText().toString());
+                if(orig.getText().toString() == "    Your Current Location"|| des.getText().toString() == "    Your Destiation Location")
+                    Toast.makeText(MapsActivity.this, "Please give both inputs", Toast.LENGTH_SHORT).show();
+
+                if (orig.getText().toString()!="    Your Current Location"&& des.getText().toString() != "    Your Destiation Location")
                     intent.putExtra("flag_for_start", "true");
+                if(orig.getText().toString() != "    Your Current Location" && des.getText().toString()!= "    Your Destiation Location")
                 startActivity(intent);
 
             }
@@ -197,6 +203,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         String a=getIntent().getStringExtra("flag_for_start");
         if(getIntent().getStringExtra("flag_for_start")!=null)
         flag_for_start= 1;
+        if(getIntent().getStringExtra("hospital_flag")!=null)
+            hospital_flag= true;
         if(origin!=null&&destination!=null){
             orig.setText(origin);
             des.setText(destination);
@@ -212,6 +220,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 flag1 = true;
+                flag2=2;
                 stop.show();
                 start.setVisibility(View.INVISIBLE);
             }
@@ -223,6 +232,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 flag2 = 1;
+                stop.hide();
+                start.setVisibility(View.VISIBLE);
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng(destination).latitude, placeToLatLng(destination).longitude),18));
+
             }
         });
 
@@ -274,35 +288,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onResume() {
         super.onResume();
         mapFragment.getMapAsync(this);
-    }
-
-    private String getDirectionsUrl(LatLng origin, LatLng dest) {
-
-        // Origin of route
-        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
-
-        // Destination of route
-        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-
-        // Sensor enabled
-        String sensor = "sensor=false";
-
-        // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor;
-
-        // Output format
-        String output = "json";
-
-        // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters +"&mode="+"walking"+"&key="
-
-
-
-                +
-                "AIzaSyD8yEcLQCWLZKgkJpxYzgssSxH-Msed7Tw" ;
-        Log.d("url", url);
-
-        return url;
     }
 
 
@@ -370,40 +355,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    boolean isMarkerRotating=false;
-    private void rotateMarker(final Marker marker, final float toRotation) {
-        if(!isMarkerRotating) {
-            final Handler handler = new Handler();
-            final long start = SystemClock.uptimeMillis();
-            final float startRotation = marker.getRotation();
-            final long duration = 2000;
-
-            final Interpolator interpolator = new LinearInterpolator();
-
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    isMarkerRotating = true;
-
-                    long elapsed = SystemClock.uptimeMillis() - start;
-                    float t = interpolator.getInterpolation((float) elapsed / duration);
-
-                    float rot = t * toRotation + (1 - t) * startRotation;
-
-                    float bearing =  -rot > 180 ? rot / 2 : rot;
-
-                    marker.setRotation(bearing);
-
-                    if (t < 1.0) {
-                        // Post again 16ms later.
-                        handler.postDelayed(this, 16);
-                    } else {
-                        isMarkerRotating = false;
-                    }
-                }
-            });
-        }
-    }
+//    boolean isMarkerRotating=false;
+//    private void rotateMarker(final Marker marker, final float toRotation) {
+//        if(!isMarkerRotating) {
+//            final Handler handler = new Handler();
+//            final long start = SystemClock.uptimeMillis();
+//            final float startRotation = marker.getRotation();
+//            final long duration = 2000;
+//
+//            final Interpolator interpolator = new LinearInterpolator();
+//
+//            handler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    isMarkerRotating = true;
+//
+//                    long elapsed = SystemClock.uptimeMillis() - start;
+//                    float t = interpolator.getInterpolation((float) elapsed / duration);
+//
+//                    float rot = t * toRotation + (1 - t) * startRotation;
+//
+//                    float bearing =  -rot > 180 ? rot / 2 : rot;
+//
+//                    marker.setRotation(bearing);
+//
+//                    if (t < 1.0) {
+//                        // Post again 16ms later.
+//                        handler.postDelayed(this, 16);
+//                    } else {
+//                        isMarkerRotating = false;
+//                    }
+//                }
+//            });
+//        }
+//    }
 
     public void animateMarker(final Marker marker, final LatLng toPosition,
                               final boolean hideMarker) {
@@ -558,14 +543,14 @@ int j=1;
 //        }
         if(ahead_point==null)
         {
-            ahead_point=placeToLatLng(destination);
+            ahead_point=latLng;
         }
         if(behind_point==null)
         {
-           behind_point=placeToLatLng(origin);
+           behind_point=latLng;
         }
 
-        float bearing = (float) bearingBetweenLocations(ahead_point, behind_point);
+        float bearing = (float) bearingBetweenLocations( ahead_point,behind_point);
 
         animateMarker(start_marker,latLng,false);
 //        rotateMarker(start_marker,bearing);
@@ -619,9 +604,20 @@ int j=1;
             mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
         } else if (id == R.id.nav_manage) {
-            mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+           //hospital
+            Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
+            intent.putExtra("hospital_flag", "right");
+            startActivity(intent);
 
-        } else if (id == R.id.arp) {
+        }else if(id==R.id.lables)
+        {
+            showLables();
+        }
+        else if(id==R.id.map){
+            Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
+            startActivity(intent);
+        }
+        else if (id == R.id.arp) {
 
         } else if (id == R.id.pra){
 
@@ -878,6 +874,53 @@ int j=1;
 
 
     }
+    void showLables(){
+        final List<Marker> blocks_list=new ArrayList<>();
+        char a='a';
+        for (int i = 6; i <= 13; i++) {
+            Marker marker;
+            String mDrawableName = "letter_" + a;
+            int resID = getResources().getIdentifier(mDrawableName, "drawable", getPackageName());
+            LatLng block = placeToLatLng(locations[i]);
+
+            marker = mMap.addMarker(new MarkerOptions()
+                    .position(block)
+                    .title(locations[i])
+
+                    .icon(BitmapDescriptorFactory.fromResource(resID)));
+            marker.setVisible(false);
+            blocks_list.add(marker);
+            a++;
+
+        }
+        for(int i=0;i<6;i++){
+            IconGenerator iconFactory = new IconGenerator(this);
+            iconFactory.setBackground(getDrawable(R.color.icon));
+            iconFactory.setTextAppearance(R.style.iconGenText);
+            Marker marker;
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(locations[i])))
+                    .position(placeToLatLng(locations[i]))
+                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
+                    ;
+            mMap.addMarker(markerOptions);
+
+
+        }
+        for(int i=14;i<17;i++){
+            IconGenerator iconFactory = new IconGenerator(this);
+            iconFactory.setBackground(getDrawable(R.color.icon));
+            iconFactory.setTextAppearance(R.style.iconGenText);
+            Marker marker;
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(locations[i])))
+                    .position(placeToLatLng(locations[i]))
+                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
+                    ;
+            mMap.addMarker(markerOptions);
+
+        }
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -916,29 +959,47 @@ int j=1;
 //        //set latlong bounds
        LatLng lt2 = new LatLng(26.249759, 78.172947);
 //        mMap.setLatLngBoundsForCameraTarget(bounds);
-      final List<Marker> blocks_list=new ArrayList<>();
-        char a='a';
-        if(origin==null&&destination==null)
-        for(int i=6;i<=13;i++) {
-            Marker marker;
-            String mDrawableName = "letter_"+a;
-            int resID = getResources().getIdentifier(mDrawableName , "drawable", getPackageName());
-            LatLng block =placeToLatLng(locations[i]);
+        final List<Marker> blocks_list=new ArrayList<>();
+        if(origin==null&&destination==null&&hospital_flag==false&&ambulance_flag==false&&mobile_toilet_flag==false) {
+            char a='a';
+            for (int i = 6; i <= 13; i++) {
+                Marker marker;
+                String mDrawableName = "letter_" + a;
+                int resID = getResources().getIdentifier(mDrawableName, "drawable", getPackageName());
+                LatLng block = placeToLatLng(locations[i]);
 
-            marker=mMap.addMarker(new MarkerOptions()
-                    .position(block)
-                    .title(locations[i])
+                marker = mMap.addMarker(new MarkerOptions()
+                        .position(block)
+                        .title(locations[i])
 
-                    .icon(BitmapDescriptorFactory.fromResource(resID)));
-            marker.setVisible(false);
-            blocks_list.add(marker);
-            a++;
+                        .icon(BitmapDescriptorFactory.fromResource(resID)));
+                marker.setVisible(false);
+                blocks_list.add(marker);
+                a++;
 
+            }
+          showLables();
         }
+        if(origin=="")
+            origin=null;
+        if(destination=="")
+            destination=null;
         if(origin!=null)
       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng(origin).latitude, placeToLatLng(origin).longitude),17));
-        else
+       else  if(hospital_flag==false&&ambulance_flag==false&&mobile_toilet_flag==false)
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng("Main Gate").latitude, placeToLatLng("Main Gate").longitude),17));
+        if(hospital_flag==true){
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng("Hospital").latitude, placeToLatLng("Hospital").longitude),17));
+            IconGenerator iconFactory = new IconGenerator(this);
+            iconFactory.setBackground(getDrawable(R.color.hospital));
+
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon("Hospital")))
+                    .position(placeToLatLng("Hospital"))
+                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
+                    ;
+            mMap.addMarker(markerOptions);
+        }
 
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
@@ -956,19 +1017,21 @@ int j=1;
 //
         int src = -1, dst = -1;
         int n = locations.length;
-        for(int i = 0; i < n ; i++){
-            if(locations[i].equals(origin) || locations[i].equals(destination)){
-                src = i;
-                break;
+        if(origin!=null&&destination!=null) {
+            for (int i = 0; i < n; i++) {
+                if (locations[i].equals(origin) || locations[i].equals(destination)) {
+                    src = i;
+                    break;
+                }
             }
-        }
-        for(int i = src + 1; i < n ; i++){
-            if(locations[i].equals(origin) || locations[i].equals(destination)){
-                dst = i;
-                break;
+            for (int i = src + 1; i < n; i++) {
+                if (locations[i].equals(origin) || locations[i].equals(destination)) {
+                    dst = i;
+                    break;
+                }
             }
+            getDirectionAS(src, dst);
         }
-        getDirectionAS(src, dst);
 //        //set zoom to level to current so that you won't be able to zoom out viz. move outside bounds
 //        mMap.setMinZoomPreference(mMap.getCameraPosition().zoom);
         mMap.setMapStyle(
@@ -1033,9 +1096,9 @@ int j=1;
     }
 
     private void showDefaultLocation() {
-        Toast.makeText(this, "Location permission not granted, " +
-                        "showing default location",
-                Toast.LENGTH_SHORT).show();
+       // Toast.makeText(this, "Location permission not granted, " +
+         //               "showing default location",
+           //     Toast.LENGTH_SHORT).show();
         LatLng redmond = new LatLng(47.6739881, -122.121512);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(redmond));
     }
@@ -1056,5 +1119,6 @@ int j=1;
 
         }
     }
+
 
 }
