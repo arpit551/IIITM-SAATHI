@@ -14,33 +14,38 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MapsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        >
+
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center"
             android:layout_margin="@dimen/fab_margin"
-            app:srcCompat="@drawable/stop"
             android:backgroundTint="#00ffffff"
-            app:fabSize="normal"
+            android:visibility="invisible"
             app:elevation="0dp"
+            app:fabSize="normal"
             app:maxImageSize="54dp"
 
-            android:visibility="invisible"
-            />
+            app:srcCompat="@drawable/stop" />
+
 
         <Button
             android:id="@+id/start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@drawable/side_nav_bar"
             android:text="Start "
-            app:layout_anchor="@+id/include"
-            app:layout_anchorGravity="left|bottom"
-            android:background="@drawable/layout1"
-            android:layout_marginLeft="10dp"
-            android:layout_marginBottom="16dp"
-            android:visibility="invisible"
-            />
+
+            android:visibility="invisible"/>
+    </LinearLayout>
 
 
 

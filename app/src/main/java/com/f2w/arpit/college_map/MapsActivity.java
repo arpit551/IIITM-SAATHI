@@ -1,29 +1,19 @@
 package com.f2w.arpit.college_map;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.drawable.Drawable;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -39,10 +29,6 @@ import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -62,25 +48,11 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.SphericalUtil;
 import com.google.maps.android.ui.IconGenerator;
-
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
-
 import ir.mirrajabi.searchdialog.SimpleSearchDialogCompat;
 import ir.mirrajabi.searchdialog.core.BaseSearchDialogCompat;
 import ir.mirrajabi.searchdialog.core.SearchResultListener;
@@ -91,6 +63,7 @@ import static com.google.android.gms.location.LocationServices.getFusedLocationP
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,  NavigationView.OnNavigationItemSelectedListener {
 
     private GoogleMap mMap;
+
     GoogleMap map;
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
@@ -98,9 +71,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationRequest mLocationRequest;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
-    private long UPDATE_INTERVAL = 1000;  /* 10 secs */
-    private long FASTEST_INTERVAL = 1000; /* 2 sec */
+    private long UPDATE_INTERVAL = 500;  /* 10 secs */
+    private long FASTEST_INTERVAL = 500; /* 2 sec */
     boolean hospital_flag=false,mobile_toilet_flag=false,ambulance_flag=false;
+    List<Marker> all_mMarkers = new ArrayList<Marker>();
 
     Button start;
     Boolean flag1 = false;
@@ -111,7 +85,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     List<LatLng> all_points = new ArrayList<LatLng>();
     int flag_for_start = 0;
     FloatingActionButton stop;
-
+    boolean marker_flag=false;
+    MenuItem label;
+    Button orig;
+   Button des;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,8 +96,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //My
         final String[] destination1 = new String[1];
         final String[] source = new String[1];
-        final Button orig = (Button) findViewById(R.id.origin);
-        final Button des = (Button) findViewById(R.id.dest);
+        orig = (Button) findViewById(R.id.origin);
+        des = (Button) findViewById(R.id.dest);
         if(orig.getText().toString()!="    Your Current Location")
             origin=orig.getText().toString();
         if(des.getText().toString()!="    Your Destiation Location")
@@ -176,15 +153,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
                 intent.putExtra("Destination", des.getText().toString());
                 intent.putExtra("Origin", orig.getText().toString());
-                if(orig.getText().toString() == "    Your Current Location"|| des.getText().toString() == "    Your Destiation Location")
+                String s=orig.getText().toString();
+                if(orig.getText().toString() == ""|| des.getText().toString() == "")
                     Toast.makeText(MapsActivity.this, "Please give both inputs", Toast.LENGTH_SHORT).show();
-
-                if (orig.getText().toString()!="    Your Current Location"&& des.getText().toString() != "    Your Destiation Location")
+                else if(orig.getText().toString().equals(des.getText().toString()))
+                    Toast.makeText(MapsActivity.this, "Please give different inputs", Toast.LENGTH_SHORT).show();
+                if (orig.getText().toString()!=""&& des.getText().toString() != "")
                     intent.putExtra("flag_for_start", "true");
-                if(orig.getText().toString() != "    Your Current Location" && des.getText().toString()!= "    Your Destiation Location")
+                if(orig.getText().toString() != "" && des.getText().toString()!= ""&&orig.getText().toString()!=des.getText().toString())
                 startActivity(intent);
 
             }
@@ -256,6 +236,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        Menu menu = navigationView.getMenu();
+        label = menu.findItem(R.id.lables);
+
 
 
     }
@@ -298,13 +281,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+            //To Do
+
+//            if((orig.getText().toString() == ""|| des.getText().toString() == ""))
+//            {
+//
+//                finish();
+//                System.exit(0);
+//            }
+//            else {
+//                Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
+//                startActivity(intent);
+//            }
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+
         getMenuInflater().inflate(R.menu.navigation_drawer, menu);
+
         return true;
     }
 
@@ -474,7 +470,7 @@ int j=1;
                 },
                 Looper.myLooper());
     }
-    public void onLocationChanged(Location location) {if(flag1==true &&flag2==2) {
+    public void onLocationChanged(Location location) {if(flag1 &&flag2==2) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         Log.d("data12", String.valueOf((location.getLatitude()))
         );
@@ -610,8 +606,19 @@ int j=1;
             startActivity(intent);
 
         }else if(id==R.id.lables)
-        {
+        {   boolean f=true;
+            if(marker_flag==false&&f) {
+
+            item.setTitle("Hide markers");
             showLables();
+            f=false;
+
+        }
+        if(marker_flag==true&&f) {
+            f=false;
+            item.setTitle("Show Markers");
+            hide_marker();
+        }
         }
         else if(id==R.id.map){
             Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
@@ -877,6 +884,7 @@ int j=1;
     void showLables(){
         final List<Marker> blocks_list=new ArrayList<>();
         char a='a';
+        marker_flag=true;
         for (int i = 6; i <= 13; i++) {
             Marker marker;
             String mDrawableName = "letter_" + a;
@@ -888,7 +896,7 @@ int j=1;
                     .title(locations[i])
 
                     .icon(BitmapDescriptorFactory.fromResource(resID)));
-            marker.setVisible(false);
+            all_mMarkers.add(marker);
             blocks_list.add(marker);
             a++;
 
@@ -903,7 +911,8 @@ int j=1;
                     .position(placeToLatLng(locations[i]))
                     .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
                     ;
-            mMap.addMarker(markerOptions);
+           marker= mMap.addMarker(markerOptions);
+            all_mMarkers.add(marker);
 
 
         }
@@ -917,8 +926,15 @@ int j=1;
                     .position(placeToLatLng(locations[i]))
                     .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
                     ;
-            mMap.addMarker(markerOptions);
+            marker=mMap.addMarker(markerOptions);
+            all_mMarkers.add(marker);
 
+        }
+    }
+    public void hide_marker(){
+        marker_flag=false;
+        for (Marker marker: all_mMarkers) {
+            marker.remove();
         }
     }
 
@@ -936,7 +952,7 @@ int j=1;
         mMap.setMinZoomPreference(11);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(26.249994, 78.176121);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //get latlong for corners for specified place
 //        LatLng one = new LatLng(26.253943, 78.169293);
 //        LatLng two = new LatLng(26.246070, 78.174269);
@@ -957,27 +973,8 @@ int j=1;
 //        int padding = (int) (width * 0.10);
 //
 //        //set latlong bounds
-       LatLng lt2 = new LatLng(26.249759, 78.172947);
 //        mMap.setLatLngBoundsForCameraTarget(bounds);
-        final List<Marker> blocks_list=new ArrayList<>();
         if(origin==null&&destination==null&&hospital_flag==false&&ambulance_flag==false&&mobile_toilet_flag==false) {
-            char a='a';
-            for (int i = 6; i <= 13; i++) {
-                Marker marker;
-                String mDrawableName = "letter_" + a;
-                int resID = getResources().getIdentifier(mDrawableName, "drawable", getPackageName());
-                LatLng block = placeToLatLng(locations[i]);
-
-                marker = mMap.addMarker(new MarkerOptions()
-                        .position(block)
-                        .title(locations[i])
-
-                        .icon(BitmapDescriptorFactory.fromResource(resID)));
-                marker.setVisible(false);
-                blocks_list.add(marker);
-                a++;
-
-            }
           showLables();
         }
         if(origin=="")
@@ -1004,10 +1001,13 @@ int j=1;
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                if(mMap.getCameraPosition().zoom>14){
-                    for(Marker m:blocks_list) {
-                      m.setVisible(true);
+                if(mMap.getCameraPosition().zoom<16){
+                    for(Marker m:all_mMarkers) {
+                        m.remove();
                     }
+                }
+                if(mMap.getCameraPosition().zoom>16&&marker_flag){
+                   showLables();
                 }
             }
         });
@@ -1037,23 +1037,23 @@ int j=1;
         mMap.setMapStyle(
                 MapStyleOptions.loadRawResourceStyle(
                         this, R.raw.style_json));
-        ArrayList<LatLng> points = null;
-        PolylineOptions audi_lrc= null;
-        points = new ArrayList<LatLng>();
-        audi_lrc = new PolylineOptions();
-        double lat = 26.249182;
-        double lng =78.172871;
-        LatLng position = new LatLng(lat, lng);
-
-        points.add(position);
-        double lat1 = 26.249428;
-        double lng1 =78.174073;
-        LatLng position1 = new LatLng(lat1, lng1);
-
-        points.add(position1);
-        audi_lrc.addAll(points);
-        audi_lrc.width(16);
-        audi_lrc.color(Color.WHITE);
+//        ArrayList<LatLng> points = null;
+//        PolylineOptions audi_lrc= null;
+//        points = new ArrayList<LatLng>();
+//        audi_lrc = new PolylineOptions();
+//        double lat = 26.249182;
+//        double lng =78.172871;
+//        LatLng position = new LatLng(lat, lng);
+//
+//        points.add(position);
+//        double lat1 = 26.249428;
+//        double lng1 =78.174073;
+//        LatLng position1 = new LatLng(lat1, lng1);
+//
+//        points.add(position1);
+//        audi_lrc.addAll(points);
+//        audi_lrc.width(16);
+//        audi_lrc.color(Color.WHITE);
         IconGenerator iconFactory = new IconGenerator(this);
         if(origin!=null&&destination!=null) {
             iconFactory.setBackground(getDrawable(R.color.icon));
@@ -1073,11 +1073,11 @@ int j=1;
 
             mMap.addMarker(markerOptions1);
         }
-
-       // mMap.addPolyline(audi_lrc);
-
-
-
+        // set new title to the MenuItem
+        if(marker_flag)
+            label.setTitle("Hide Marker");
+        else
+            label.setTitle("Show Marker");
     }
 
     private void enableMyLocationIfPermitted() {
