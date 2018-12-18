@@ -7,7 +7,7 @@
     android:layout_height="wrap_content">
 
 
-    <de.hdodenhof.circleimageview.CircleImageView
+    <ImageView
         android:id="@+id/person_photo"
         android:layout_width="100dp"
         android:layout_height="100dp"

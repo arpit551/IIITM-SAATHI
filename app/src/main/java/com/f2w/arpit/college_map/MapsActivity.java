@@ -1,16 +1,23 @@
 package com.f2w.arpit.college_map;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -29,11 +36,20 @@ import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -48,6 +64,8 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.maps.android.SphericalUtil;
 import com.google.maps.android.ui.IconGenerator;
 import java.util.ArrayList;
@@ -64,15 +82,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
 
+
     GoogleMap map;
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
     String origin=null, destination=null;
     private LocationRequest mLocationRequest;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    final static int LOCATION_SETTINGS_REQUEST = 199;
+    private static final int REQUEST_CHECK_SETTINGS = 214;
+    private static final int REQUEST_ENABLE_GPS = 516;
 
-    private long UPDATE_INTERVAL = 500;  /* 10 secs */
-    private long FASTEST_INTERVAL = 500; /* 2 sec */
+
+    private long UPDATE_INTERVAL = 5;  /* 10 secs */
+    private long FASTEST_INTERVAL = 5; /* 2 sec */
+
     boolean hospital_flag=false,mobile_toilet_flag=false,ambulance_flag=false;
     List<Marker> all_mMarkers = new ArrayList<Marker>();
 
@@ -89,6 +113,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     MenuItem label;
     Button orig;
    Button des;
+   Marker marker1;
+    FusedLocationProviderClient m;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -172,7 +200,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // MY end
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
-        startLocationUpdates();
+//        startLocationUpdates();
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map1);
@@ -238,6 +266,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         navigationView.setNavigationItemSelectedListener(this);
         Menu menu = navigationView.getMenu();
         label = menu.findItem(R.id.lables);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+
+        startLocationUpdates();
 
 
 
@@ -286,6 +332,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if(flag_for_start||hospital_flag){
                 Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
                 startActivity(intent);
+                finish();
 
             }
             else {
@@ -424,7 +471,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     Marker start_marker;
 int j=1;
+    @SuppressLint("MissingPermission")
     protected void startLocationUpdates() {
+        m=getFusedLocationProviderClient(this);
 
         // Create the location request to start receiving updates
         mLocationRequest = new LocationRequest();
@@ -433,7 +482,7 @@ int j=1;
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mLocationRequest.setSmallestDisplacement(1);
 
-        // Create LocationSettingsRequest object using location request
+//         Create LocationSettingsRequest object using location request
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
         builder.addLocationRequest(mLocationRequest);
         LocationSettingsRequest locationSettingsRequest = builder.build();
@@ -442,37 +491,78 @@ int j=1;
         // https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
         SettingsClient settingsClient = LocationServices.getSettingsClient(this);
         settingsClient.checkLocationSettings(locationSettingsRequest);
+        LocationSettingsRequest.Builder settingsBuilder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+
+        settingsBuilder.setAlwaysShow(true);
+        Task<LocationSettingsResponse> result = LocationServices.getSettingsClient(this)
+                .checkLocationSettings(settingsBuilder.build());
+
+
+        result.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+            @Override
+            public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
+                try {
+                    LocationSettingsResponse response =
+                            task.getResult(ApiException.class);
+                    m.requestLocationUpdates(mLocationRequest, new LocationCallback() {
+                                @Override
+                                public void onLocationResult(LocationResult locationResult) {
+
+                                    // do work here
+                                    onLocationChanged(locationResult.getLastLocation());
+                                }
+                            },
+                            Looper.myLooper());
+
+
+                } catch (ApiException ex) {
+                    switch (ex.getStatusCode()) {
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            try {
+                                ResolvableApiException resolvableApiException =
+                                        (ResolvableApiException) ex;
+                                resolvableApiException
+                                        .startResolutionForResult(MapsActivity.this,
+                                                LOCATION_SETTINGS_REQUEST);
+                            } catch (IntentSender.SendIntentException e) {
+
+                            }
+                            break;
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+
+                            break;
+                    }
+                }
+            }
+        });
+
+
 
         // new Google API SDK v11 uses getFusedLocationProviderClient(this)
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
 
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
 
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == LOCATION_SETTINGS_REQUEST) {
+            switch (resultCode) {
+                case Activity.RESULT_OK:
+                    //Success Perform Task Here
+                    break;
+                case Activity.RESULT_CANCELED:
+                    Log.e("GPS", "User denied to access location");
+                    break;
+            }
         }
-        getFusedLocationProviderClient(this).requestLocationUpdates(mLocationRequest, new LocationCallback() {
-                    @Override
-                    public void onLocationResult(LocationResult locationResult) {
-                        // do work here
-                        onLocationChanged(locationResult.getLastLocation());
-                    }
-                },
-                Looper.myLooper());
     }
     public void onLocationChanged(Location location) {if(flag1 &&flag2==2) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        Log.d("data12", String.valueOf((location.getLatitude()))
-        );
+
         CameraUpdate center =
                 CameraUpdateFactory.newLatLng(latLng);
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(18.0f);
@@ -622,6 +712,12 @@ int j=1;
         else if(id==R.id.map){
             Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
             startActivity(intent);
+        }
+        else if (id == R.id.helpline) {
+
+            Intent i = new Intent(MapsActivity.this, ContactUs.class);
+            startActivity(i);
+
         }
         else if (id == R.id.arp) {
 
@@ -941,11 +1037,11 @@ int j=1;
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        startLocationUpdates();
+
+        enableMyLocationIfPermitted();
 
         markerPoints = new ArrayList<LatLng>();
 
-        enableMyLocationIfPermitted();
 
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.setMinZoomPreference(11);

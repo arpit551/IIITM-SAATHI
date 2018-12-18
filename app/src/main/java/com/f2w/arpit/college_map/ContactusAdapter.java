@@ -52,10 +52,10 @@ public class ContactusAdapter extends BaseAdapter {
 
         AssetManager assetManager = mContext.getAssets();
 
-        final Typeface tvFont = Typeface.createFromAsset(assetManager,  "fonts/Delius-Regular.ttf");
-        person_name.setTypeface(tvFont);
-        person_department.setTypeface(tvFont);
-        person_email.setTypeface(tvFont);
+//        final Typeface tvFont = Typeface.createFromAsset(assetManager,  "fonts/Delius-Regular.ttf");
+//        person_name.setTypeface(tvFont);
+//        person_department.setTypeface(tvFont);
+//        person_email.setTypeface(tvFont);
 
         person_name.setTextColor(Color.BLACK);
 
