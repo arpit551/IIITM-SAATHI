@@ -29,6 +29,10 @@
             android:id="@+id/map"
             android:icon="@drawable/hospital"
             android:title="Show Map" />
+        <item
+            android:id="@+id/helpline"
+            android:icon="@drawable/hospital"
+            android:title="helpline" />
     </group>
 
     <item android:title="Developers">

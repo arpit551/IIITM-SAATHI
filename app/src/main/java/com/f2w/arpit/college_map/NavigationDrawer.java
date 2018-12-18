@@ -1,5 +1,6 @@
 package com.f2w.arpit.college_map;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -96,6 +97,10 @@ public class NavigationDrawer extends AppCompatActivity
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
+
+        } else if (id == R.id.helpline) {
+            Intent i = new Intent(NavigationDrawer.this, MapsActivity.class);
+            startActivity(i);
 
         } else if (id == R.id.arp) {
 
