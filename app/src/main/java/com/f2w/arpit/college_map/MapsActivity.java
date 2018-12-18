@@ -83,7 +83,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Boolean zoom_flag = true;
     SupportMapFragment mapFragment;
     List<LatLng> all_points = new ArrayList<LatLng>();
-    int flag_for_start = 0;
+    Boolean flag_for_start = false;
     FloatingActionButton stop;
     boolean marker_flag=false;
     MenuItem label;
@@ -182,7 +182,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         destination = getIntent().getStringExtra("Destination");
         String a=getIntent().getStringExtra("flag_for_start");
         if(getIntent().getStringExtra("flag_for_start")!=null)
-        flag_for_start= 1;
+        flag_for_start= true;
         if(getIntent().getStringExtra("hospital_flag")!=null)
             hospital_flag= true;
         if(origin!=null&&destination!=null){
@@ -192,7 +192,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         start = (Button) findViewById(R.id.start);
-        if(flag_for_start==1)
+        if(flag_for_start)
             start.setVisibility(View.VISIBLE);
         else
             start.setVisibility(View.INVISIBLE);
@@ -280,19 +280,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+
             //To Do
 
-//            if((orig.getText().toString() == ""|| des.getText().toString() == ""))
-//            {
-//
-//                finish();
-//                System.exit(0);
-//            }
-//            else {
-//                Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
-//                startActivity(intent);
-//            }
+            if(flag_for_start||hospital_flag){
+                Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
+                startActivity(intent);
+
+            }
+            else {
+
+                super.onBackPressed();
+            }
         }
     }
 
