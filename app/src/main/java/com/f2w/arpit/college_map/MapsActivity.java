@@ -3,7 +3,9 @@ package com.f2w.arpit.college_map;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -11,6 +13,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -282,8 +285,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates();
+        }
 
-        startLocationUpdates();
+
 
 
 
@@ -296,7 +302,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         items.add(new SearchModel("Learning Resource Center (LRC)"));
         items.add(new SearchModel("New Auditorium"));
         items.add(new SearchModel("Cafeteria Canteen"));
-        items.add(new SearchModel("Cricket Ground"));
+        items.add(new SearchModel("Main Pandaal"));
         items.add(new SearchModel("A-Block"));
         items.add(new SearchModel("B-Block/LT-1"));
         items.add(new SearchModel("C-Block"));
@@ -360,10 +366,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.hybrid) {
-            mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-            // Handle the camera action
-        } else if (id == R.id.satellite) {
+      if (id == R.id.satellite) {
             mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
         } else if (id == R.id.normal) {
@@ -1199,10 +1202,10 @@ int j=1;
        // Toast.makeText(this, "Location permission not granted, " +
          //               "showing default location",
            //     Toast.LENGTH_SHORT).show();
-        LatLng redmond = new LatLng(47.6739881, -122.121512);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(redmond));
+        LatLng main_gate = new LatLng(26.25002, 78.17634);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(main_gate));
     }
-
+int x=0;
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -1213,6 +1216,28 @@ int j=1;
                     enableMyLocationIfPermitted();
                 } else {
                     showDefaultLocation();
+                    x=1;
+//               if(x==1){
+//                   x++;
+//                   AlertDialog.Builder builder;
+//                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                       builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+//                   } else {
+//                       builder = new AlertDialog.Builder(this);
+//                   }
+//                   builder.setTitle("Permission not given")
+//                           .setMessage("You haven't given appropriate permission to start the app please restart and give permission")
+//                           .setPositiveButton("Restart", new DialogInterface.OnClickListener() {
+//                               public void onClick(DialogInterface dialog, int which) {
+//                                   Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
+//                                   startActivity(intent);
+//                                   finish();
+//                               }
+//                           })
+//
+//                           .setIcon(android.R.drawable.ic_dialog_alert)
+//                           .show();
+//               }
                 }
                 return;
             }

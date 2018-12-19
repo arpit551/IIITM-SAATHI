@@ -62,12 +62,12 @@ public class Contactus_details {
     public void setCall(String call) {
         this.call = call;
     }
-
-    public int getImage() {
-        return image;
-    }
-
-    public void setImage(int image) {
-        this.image = image;
-    }
+//
+//    public int getImage() {
+//        return image;
+//    }
+//
+//    public void setImage(int image) {
+//        this.image = image;
+//    }
 }

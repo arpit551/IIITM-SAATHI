@@ -60,7 +60,7 @@ public class ContactusAdapter extends BaseAdapter {
         person_name.setTextColor(Color.BLACK);
 
         ImageView person_call=(ImageView) view.findViewById(R.id.call_person_button);
-        ImageView person_image=(ImageView)view.findViewById(R.id.person_photo);
+//        ImageView person_image=(ImageView)view.findViewById(R.id.person_photo);
 
 
 
@@ -77,7 +77,6 @@ public class ContactusAdapter extends BaseAdapter {
         });
 
         person_call.setImageResource(R.drawable.callbutton);
-        person_image.setImageResource(mContactus_detailslist.get(position).getImage());
         view.setTag(mContactus_detailslist.get(position).getId());
         return view;
     }
