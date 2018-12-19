@@ -60,7 +60,11 @@
             android:name=".NavigationDrawer"
             android:label="@string/title_activity_navigation_drawer"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ContactUs"></activity>
+        <activity android:name=".ContactUs" />
+        <activity
+            android:name=".Photo"
+            android:label="@string/title_activity_photo"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -99,6 +100,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private long UPDATE_INTERVAL = 5;  /* 10 secs */
     private long FASTEST_INTERVAL = 5; /* 2 sec */
+    ProgressDialog pd;
 
     boolean hospital_flag=false,mobile_toilet_flag=false,ambulance_flag=false;
     List<Marker> all_mMarkers = new ArrayList<Marker>();
@@ -106,7 +108,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button start;
     Boolean flag1 = false;
     int flag2 = 2;
-    String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "New Auditorium", "Cafeteria Canteen", "Main Pandaal", "A-Block", "B-Block/LT-1", "C-Block", "D-Block", "E-Block", "F-Block", "G-Block", "H-Block", "Hospital", "Open Air Theatre (OAT)", "Sports Complex", "MDP", "Visitors Hostel"};
+    String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "Convention Center", "Cafeteria Canteen", "Main Pandaal", "Block-II", "LT-1", "Block-III", "Block-IV", "Block-VI", "LT-2", "Block-V", "Block-I", "Hospital", "Open Air Theatre (OAT)", "Sports Complex", "MDP", "Visitors Hostel"};
     Boolean zoom_flag = true;
     SupportMapFragment mapFragment;
     List<LatLng> all_points = new ArrayList<LatLng>();
@@ -124,6 +126,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_drawer);
+        pd = new ProgressDialog(this);
+        pd.setMessage("Starting Navigation");
         //My
         final String[] destination1 = new String[1];
         final String[] source = new String[1];
@@ -234,6 +238,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 flag2=2;
                 stop.show();
                 start.setVisibility(View.INVISIBLE);
+                pd.show();
+
             }
         });
 
@@ -300,17 +306,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         items.add(new SearchModel("Main Gate"));
         items.add(new SearchModel("Administrative Block"));
         items.add(new SearchModel("Learning Resource Center (LRC)"));
-        items.add(new SearchModel("New Auditorium"));
+        items.add(new SearchModel("Convention Center"));
         items.add(new SearchModel("Cafeteria Canteen"));
         items.add(new SearchModel("Main Pandaal"));
-        items.add(new SearchModel("A-Block"));
-        items.add(new SearchModel("B-Block/LT-1"));
-        items.add(new SearchModel("C-Block"));
-        items.add(new SearchModel("D-Block"));
-        items.add(new SearchModel("E-Block"));
-        items.add(new SearchModel("F-Block"));
-        items.add(new SearchModel("G-Block"));
-        items.add(new SearchModel("H-Block"));
+        items.add(new SearchModel("Block-II"));
+        items.add(new SearchModel("LT-1"));
+        items.add(new SearchModel("Block-III"));
+        items.add(new SearchModel("Block-IV"));
+        items.add(new SearchModel("Block-VI"));
+        items.add(new SearchModel("LT-2"));
+        items.add(new SearchModel("Block-V"));
+        items.add(new SearchModel("Block-I"));
         items.add(new SearchModel("Hospital"));
         items.add(new SearchModel("Open Air Theatre (OAT)"));
         items.add(new SearchModel("Sports Complex"));
@@ -513,7 +519,8 @@ int j=1;
                     m.requestLocationUpdates(mLocationRequest, new LocationCallback() {
                                 @Override
                                 public void onLocationResult(LocationResult locationResult) {
-
+                                    if(pd!=null)
+                                        pd.dismiss();
                                     // do work here
                                     onLocationChanged(locationResult.getLastLocation());
                                 }
@@ -566,6 +573,7 @@ int j=1;
         }
     }
     public void onLocationChanged(Location location) {if(flag1 &&flag2==2) {
+
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
         CameraUpdate center =
@@ -581,10 +589,10 @@ int j=1;
 
         }
 
-        if(j==1)
-            start_marker=mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude()))
-                    .title("Current Location")
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow)));
+//        if(j==1)
+//            start_marker=mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude()))
+//                    .title("Current Location")
+//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow)));
         j++;
         LatLng ahead_point=null,behind_point=null;
 
@@ -642,7 +650,7 @@ int j=1;
 
         float bearing = (float) bearingBetweenLocations( ahead_point,behind_point);
 
-        animateMarker(start_marker,latLng,false);
+//        animateMarker(start_marker,latLng,false);
 //        rotateMarker(start_marker,bearing);
         LatLng mlastlocation=latLng;
 
@@ -685,7 +693,8 @@ int j=1;
 
 
         if (id == R.id.nav_camera) {
-            mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            Intent intent = new Intent(MapsActivity.this, Photo.class);
+            startActivity(intent);
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
             mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
@@ -879,7 +888,18 @@ int j=1;
             LatLng main_gate = new LatLng(26.24655, 78.17255);
             return main_gate;
         }
+        if(place.equals(locations[17]))//mdp
+        {
 
+            LatLng main_gate = new LatLng(26.24888, 78.17706);
+            return main_gate;
+        }
+        if(place.equals(locations[18]))//vh
+        {
+
+            LatLng main_gate = new LatLng(26.24632, 78.17410);
+            return main_gate;
+        }
 
 
 
@@ -911,7 +931,7 @@ int j=1;
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"5",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"2",""},	{"2",""},	{"4",""},	{"4",""}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"6",""},	{"7","y}e_Dcdc|M_@SEO"},	{"7",""},	{"13",""},	{"13",""},	{"13",""},	{"13",""},	{"13","uaf_Dmdc|MtAY"},	{"14","__f_Deec|MCQGBKy@"},	{"14",""},	{"14",""},	{"14",""},	{"14",""}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"7",""},	{"8","y}e_Dcdc|MS\\@P"},	{"8",""},	{"8",""},	{"8",""},	{"6",""},	{"6",""},	{"6",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"8",""},	{"9","i~e_Dubc|MwAZ"},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"7",""},	{"7",""},	{"7",""},	{"2",""},	{"2",""}	},
+{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"8",""},	{"9","i~e_Dubc|MwAZ"},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"9",""},	{"10","ecf_Deac|MbAS"},	{"10",""},	{"13",""},	{"13","aaf_Dyac|MSqA"},	{"13",""},	{"8",""},	{"8",""},	{"13",""},	{"13",""}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"10",""},	{"11","ecf_Deac|MWFCQYQ"},	{"11",""},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"9",""}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"11",""},	{"12","{cf_Dwcc|MSD@NK\\"},	{"12",""},	{"12",""},	{"10",""},	{"10",""},	{"12",""},	{"12",""}	},
@@ -985,26 +1005,27 @@ int j=1;
 
     }
     void showLables(){
-        final List<Marker> blocks_list=new ArrayList<>();
-        char a='a';
+//        final List<Marker> blocks_list=new ArrayList<>();
+//        char a='a';
+//        marker_flag=true;
+//        for (int i = 6; i <= 13; i++) {
+//            Marker marker;
+//            String mDrawableName = "letter_" + a;
+//            int resID = getResources().getIdentifier(mDrawableName, "drawable", getPackageName());
+//            LatLng block = placeToLatLng(locations[i]);
+//
+//            marker = mMap.addMarker(new MarkerOptions()
+//                    .position(block)
+//                    .title(locations[i])
+//
+//                    .icon(BitmapDescriptorFactory.fromResource(resID)));
+//            all_mMarkers.add(marker);
+//            blocks_list.add(marker);
+//            a++;
+//
+//        }
         marker_flag=true;
-        for (int i = 6; i <= 13; i++) {
-            Marker marker;
-            String mDrawableName = "letter_" + a;
-            int resID = getResources().getIdentifier(mDrawableName, "drawable", getPackageName());
-            LatLng block = placeToLatLng(locations[i]);
-
-            marker = mMap.addMarker(new MarkerOptions()
-                    .position(block)
-                    .title(locations[i])
-
-                    .icon(BitmapDescriptorFactory.fromResource(resID)));
-            all_mMarkers.add(marker);
-            blocks_list.add(marker);
-            a++;
-
-        }
-        for(int i=0;i<6;i++){
+        for(int i=0;i<19;i++){if(i!=14) {
             IconGenerator iconFactory = new IconGenerator(this);
             iconFactory.setBackground(getDrawable(R.color.icon));
             iconFactory.setTextAppearance(R.style.iconGenText);
@@ -1012,27 +1033,27 @@ int j=1;
             MarkerOptions markerOptions = new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(locations[i])))
                     .position(placeToLatLng(locations[i]))
-                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
-                    ;
-           marker= mMap.addMarker(markerOptions);
+                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
+            marker = mMap.addMarker(markerOptions);
             all_mMarkers.add(marker);
+        }
 
 
         }
-        for(int i=14;i<17;i++){
-            IconGenerator iconFactory = new IconGenerator(this);
-            iconFactory.setBackground(getDrawable(R.color.icon));
-            iconFactory.setTextAppearance(R.style.iconGenText);
-            Marker marker;
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(locations[i])))
-                    .position(placeToLatLng(locations[i]))
-                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
-                    ;
-            marker=mMap.addMarker(markerOptions);
-            all_mMarkers.add(marker);
-
-        }
+//        for(int i=14;i<17;i++){
+//            IconGenerator iconFactory = new IconGenerator(this);
+//            iconFactory.setBackground(getDrawable(R.color.icon));
+//            iconFactory.setTextAppearance(R.style.iconGenText);
+//            Marker marker;
+//            MarkerOptions markerOptions = new MarkerOptions()
+//                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(locations[i])))
+//                    .position(placeToLatLng(locations[i]))
+//                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
+//                    ;
+//            marker=mMap.addMarker(markerOptions);
+//            all_mMarkers.add(marker);
+//
+//        }
     }
     public void hide_marker(){
         marker_flag=false;

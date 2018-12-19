@@ -32,7 +32,7 @@
         <item
             android:id="@+id/helpline"
             android:icon="@drawable/hospital"
-            android:title="helpline" />
+            android:title="Helpline" />
     </group>
 
     <item android:title="Developers">
