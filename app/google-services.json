@@ -23,6 +23,22 @@
           }
         },
         {
+          "client_id": "96877333972-rqn5u1dhdqaohqp48cunpbl92ekqopfc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.f2w.arpit.college_map",
+            "certificate_hash": "3e33300fb1a4d79d1cc090f886b77026ad8f2e54"
+          }
+        },
+        {
+          "client_id": "96877333972-j29shvqrjt25eflv1a7gdodulp0pd58n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.f2w.arpit.college_map",
+            "certificate_hash": "473fff3e9d9e648588208cf33fae981b97d5b5ab"
+          }
+        },
+        {
           "client_id": "96877333972-9q8634l0pb7qbttpucqd1a2hbh3fgajq.apps.googleusercontent.com",
           "client_type": 3
         }
