@@ -103,7 +103,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button start;
     Boolean flag1 = false;
     int flag2 = 2;
-    String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "New Auditorium", "Cafeteria Canteen", "Cricket Ground", "A-Block", "B-Block/LT-1", "C-Block", "D-Block", "E-Block", "F-Block", "G-Block", "H-Block", "Hospital", "Open Air Theatre (OAT)", "Sports Complex"};
+    String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "New Auditorium", "Cafeteria Canteen", "Cricket Ground", "A-Block", "B-Block/LT-1", "C-Block", "D-Block", "E-Block", "F-Block", "G-Block", "H-Block", "Hospital", "Open Air Theatre (OAT)", "Sports Complex", "MDP", "Visitors Hostel"};
     Boolean zoom_flag = true;
     SupportMapFragment mapFragment;
     List<LatLng> all_points = new ArrayList<LatLng>();
@@ -308,6 +308,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         items.add(new SearchModel("Hospital"));
         items.add(new SearchModel("Open Air Theatre (OAT)"));
         items.add(new SearchModel("Sports Complex"));
+        items.add(new SearchModel("MDP"));
+        items.add(new SearchModel("Visitors Hostel"));
         return items;
     }
     //MYY end
@@ -899,7 +901,7 @@ int j=1;
   String[][][] p =
             {
 {	{"0",""},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"18",""},	{"18",""},	{"17","q}e_Dwxc|MNr@JAHFDJBNnCq@?ODWnAqC"},	{"18","q}e_Dwxc|MLr@R@HJBRnCq@HAN@PFbFxCD@DADCnGdD"}	},
-{	{"0",""},	{"1",""},	{"2","_ze_Dkkc|MfAhH"},	{"3","_ze_Dkkc|Mb@xCfAWDAD@D@B?~@Y"},	{"2",""},	{"2",""},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"14","_ze_Dkkc|M@FcBZQ@ODIJCNEPe@JBV"},	{"18",""}	{"18",""},	{"17","_ze_Dkkc|M@SMMeA{GJIBMnCq@?ODWnAqC"},	{"18","_ze_Dkkc|M@SMMeA{GJIBMnCq@N@PFbFxCD@DADCnGdD"}	},
+{	{"0",""},	{"1",""},	{"2","_ze_Dkkc|MfAhH"},	{"3","_ze_Dkkc|Mb@xCfAWDAD@D@B?~@Y"},	{"2",""},	{"2",""},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"14","_ze_Dkkc|M@FcBZQ@ODIJCNEPe@JBV"},	{"18",""},	{"18",""},	{"17","_ze_Dkkc|M@SMMeA{GJIBMnCq@?ODWnAqC"},	{"18","_ze_Dkkc|M@SMMeA{GJIBMnCq@N@PFbFxCD@DADCnGdD"}	},
 {	{"0",""},	{"0",""},	{"2",""},	{"3","}we_Dcbc|M]mCfAWDAD@D@B?~@Y"},	{"4","wwe_Dabc|My@HB`@]H"},	{"5","wwe_Dabc|My@H@`@H`@x@hB"},	{"7",""},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"3",""},	{"2","}we_Dcbc|M]mCfAWDAD@D@B?~@Y"},	{"5","}se_Dahc|M?F?D@BBBBBD?BAHZTEPFiCpGGb@MB"},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"4",""},	{"5","ize_Dm`c|MLCtAbC"},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"2",""},	{"2",""},	{"2",""},	{"2",""}	},
@@ -913,8 +915,8 @@ int j=1;
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"12",""},	{"13","uaf_Dmdc|MgAT"},	{"13",""},	{"13",""},	{"13",""},	{"13",""},	{"13",""}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"13",""},	{"6",""},	{"6",""},	{"6",""},	{"6",""},	{"6",""}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"14",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"15",""},	{"16","oge_Dibc|MUnAd@JDD@J@L"}	{"16",""},	{"16",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"16",""}	{"18",""},	{"18","_fe_Dmmc|Mj@XBF?H]dA_ArF"}	},
+{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"15",""},	{"16","oge_Dibc|MUnAd@JDD@J@L"},	{"16",""},	{"16",""}	},
+{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"16",""},	{"18",""},	{"18","_fe_Dmmc|Mj@XBF?H]dA_ArF"}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"17",""},	{"18","{te_Do}c|MkAnCEV?PR@TF`FxCFA|GfD"}	},
 {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"18",""}	}
 }
