@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">College_map</string>
+    <string name="app_name">IIITM Saathi</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_navigation_drawer">NavigationDrawer</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>

@@ -15,11 +15,7 @@
     android:layout_height="match_parent"
     tools:context=".MapsActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        >
+
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/stop"
@@ -45,7 +41,6 @@
             android:text="Start "
 
             android:visibility="invisible"/>
-    </LinearLayout>
 
 
 
