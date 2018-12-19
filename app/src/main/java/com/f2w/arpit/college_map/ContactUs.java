@@ -26,17 +26,13 @@ public class ContactUs extends AppCompatActivity {
         setContentView(R.layout.activity_contact_us);
         lvcontactus=(ListView)findViewById(R.id.listview_contactus);
         mContactus_detailslist =new ArrayList<>();
-        mContactus_detailslist.add(new Contactus_details(1,"JUHI TIWARI","juhi@infotsav.in","Coordinator","9461155105",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(2,"MUKUL SIKKA","mukul@infotsav.in","Coordinator","7470485414",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(3,"PRATYUSH RANJAN","pratyush@infotsav.in","Coordinator","9598319698",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(4,"SHUBHANKER SRIVASTAVA","shubhanker@infotsav.in","Coordinator","9454932137",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(5,"AVIHARSH SHUKLA","sidvaish4@gmail.com","Head App Developer","8765114937",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(6,"SIDDHARTH VAISH","sidvaish97@gmail.com","Head App Developer","9149386335",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(7,"HIMADRI SINGH","himsingh1612@gmail.com","App Developer","8449569368",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(8,"DEEPAK PALIWAL","deepakkpaliwal@gmail.com","App Developer","8769449558",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(9,"ABHISHEK CHAURASIA","abhi.chaurasia14@gmail.com","App Developer","9919098817",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(10,"ADITYA SHANKAR MISHRA","adityashankarmishra3@gmail.com","App Developer","9260970643",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(11,"SHUBHAM BHAWSAR","bhawsarshubham741@gmail.com","App Developer","8878674076",R.drawable.barry_allen));
+
+        mContactus_detailslist.add(new Contactus_details(1,"Control Room","7512449606","Security","+917512449606",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(2,"Ambulance","108","Medical","108",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(3,"Mr S M Tahir","7869571718","Hall Management","+917869571718",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(4,"Mr Thomas Mathew","9993095996","Registration","+919993095996",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(5,"Mr Ajay Sharma","9009522168","Transportation","+919009522168",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(6,"Mr Devendra Singh","9926288778","Catering","+919926288778",R.drawable.barry_allen));
 
         adapter=new ContactusAdapter(getApplicationContext(), mContactus_detailslist);
         lvcontactus.setAdapter(adapter);
@@ -44,7 +40,7 @@ public class ContactUs extends AppCompatActivity {
         lvcontactus.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(),"Item clicked",Toast.LENGTH_LONG).show();
+               Toast.makeText(getApplicationContext(),"Press call icon to make the call",Toast.LENGTH_LONG).show();
             }
         });
 
