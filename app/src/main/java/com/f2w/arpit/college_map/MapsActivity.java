@@ -102,8 +102,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     boolean hospital_flag=false,mobile_toilet_flag=false,ambulance_flag=false;
     List<Marker> all_mMarkers = new ArrayList<Marker>();
-
-    Button start;
+    List<Marker> all_mMarkers_toilet = new ArrayList<Marker>();
+    FloatingActionButton start;
     Boolean flag1 = false;
     int flag2 = 2;
     String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "Convention Center", "Cafeteria Canteen", "Main Pandaal", "Block-II", "LT-1", "Block-III", "Block-IV", "Block-VI", "LT-2", "Block-V", "Block-I", "Hospital", "Open Air Theatre (OAT)", "Sports Complex", "MDP", "Visitors Hostel"};
@@ -118,6 +118,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
    Button des;
    Marker marker1;
     FusedLocationProviderClient m;
+    Boolean event_flag=false;
+    String[] publicToilets = {"pt0","pt1","pt2","pt3","pt4"};
 
 
     @Override
@@ -204,6 +206,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     intent.putExtra("flag_for_start", "true");
                 if(orig.getText().toString() != "" && des.getText().toString()!= ""&&!(orig.getText().toString().equals(des.getText().toString())))
                 startActivity(intent);
+                finish();
 
             }
         });
@@ -218,6 +221,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         tvDistanceDuration = (TextView) findViewById(R.id.text);
         origin = getIntent().getStringExtra("Origin");
         destination = getIntent().getStringExtra("Destination");
+        if(getIntent().getStringExtra("EventPressed")!=null) {
+            event_flag = true;
+            Toast.makeText(MapsActivity.this, "Please select your current location", Toast.LENGTH_SHORT).show();
+        }
         String a=getIntent().getStringExtra("flag_for_start");
         if(getIntent().getStringExtra("flag_for_start")!=null)
         flag_for_start= true;
@@ -229,18 +236,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
 
-        start = (Button) findViewById(R.id.start);
+        start = (FloatingActionButton) findViewById(R.id.start);
         if(flag_for_start)
-            start.setVisibility(View.VISIBLE);
+            start.show();
         else
-            start.setVisibility(View.INVISIBLE);
+            start.hide();
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 flag1 = true;
                 flag2=2;
                 stop.show();
-                start.setVisibility(View.INVISIBLE);
+                start.hide();
                 pd.show();
 
             }
@@ -253,7 +260,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onClick(View view) {
                 flag2 = 1;
                 stop.hide();
-                start.setVisibility(View.VISIBLE);
+                start.show();
 
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng(destination).latitude, placeToLatLng(destination).longitude),18));
 
@@ -336,7 +343,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
     }
 
-
+int backpress=0;
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -350,11 +357,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
                 startActivity(intent);
                 finish();
-
             }
             else {
 
-                super.onBackPressed();
+                backpress = (backpress + 1);
+                Toast.makeText(getApplicationContext(), " Press Back again to Exit ", Toast.LENGTH_SHORT).show();
+
+                if (backpress>1) {
+                    this.finish();
+                }
             }
         }
     }
@@ -445,6 +456,50 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //            });
 //        }
 //    }
+void showLablesToilets(){
+    CameraPosition newCamPos = new CameraPosition.Builder()
+            .target(placeToLatLng(publicToilets[0]))      // Sets the center of the map to Mountain View
+            .zoom(18)                    // Sets the tilt of the camera to 30 degrees
+            .build();
+    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCamPos));
+//    marker_flag=true;
+    for(int i=0;i<3;i++){
+
+        mobile_toilet_flag=true;
+        IconGenerator iconFactory = new IconGenerator(this);
+        iconFactory.setBackground(getDrawable(R.color.icon));
+        iconFactory.setTextAppearance(R.style.iconGenText);
+        Marker marker;
+            String mDrawableName = "toilet1";
+            int resID = getResources().getIdentifier(mDrawableName, "drawable", getPackageName());
+            LatLng block = placeToLatLng(publicToilets[i]);
+
+            marker = mMap.addMarker(new MarkerOptions()
+                    .position(block)
+                    .title("Public Toilet")
+
+                    .icon(BitmapDescriptorFactory.fromResource(resID)));
+
+
+//        MarkerOptions markerOptions = new MarkerOptions()
+//                .icon(getDrawable())
+//                .position(placeToLatLng(publicToilets[i]))
+//                .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
+//        marker = mMap.addMarker(markerOptions);
+        all_mMarkers_toilet.add(marker);
+
+
+
+    }
+
+}
+    public void hide_marker_toilets(){
+//        marker_flag=false;
+        mobile_toilet_flag=false;
+        for (Marker marker: all_mMarkers_toilet) {
+            marker.remove();
+        }
+    }
 
     public void animateMarker(final Marker marker, final LatLng toPosition,
                               final boolean hideMarker) {
@@ -704,7 +759,10 @@ int j=1;
             startActivity(intent);
         }
         else if (id == R.id.nav_gallery) {
-            mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+            if(!mobile_toilet_flag)
+           showLablesToilets();
+            else
+                hide_marker_toilets();
 
         } else if (id == R.id.nav_slideshow) {
             mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
@@ -714,6 +772,7 @@ int j=1;
             Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
             intent.putExtra("hospital_flag", "right");
             startActivity(intent);
+            finish();
 
         }else if(id==R.id.lables)
         {   boolean f=true;
@@ -733,6 +792,7 @@ int j=1;
         else if(id==R.id.map){
             Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
             startActivity(intent);
+            finish();
         }
         else if (id == R.id.helpline) {
 
@@ -907,7 +967,27 @@ int j=1;
             LatLng main_gate = new LatLng(26.24632, 78.17410);
             return main_gate;
         }
+        if(place.equals(publicToilets[0]))//vh
+        {
 
+            LatLng main_gate = new LatLng(26.249335, 78.171364);
+            return main_gate;
+        }
+        if(place.equals(publicToilets[1]))//vh
+        {
+
+            LatLng main_gate = new LatLng(26.249278, 78.171870);
+            return main_gate;
+        }
+        if(place.equals(publicToilets[2]))//vh
+        {
+
+            LatLng main_gate = new LatLng(26.249007, 78.172228
+
+            );
+            return main_gate;
+        }
+// ends
 
 
         return null;
@@ -1080,7 +1160,7 @@ int j=1;
 
 
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        mMap.setMinZoomPreference(11);
+        mMap.setMinZoomPreference(16);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(26.249994, 78.176121);
 //        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -1105,7 +1185,7 @@ int j=1;
 //
 //        //set latlong bounds
 //        mMap.setLatLngBoundsForCameraTarget(bounds);
-        if(origin==null&&destination==null&&hospital_flag==false&&ambulance_flag==false&&mobile_toilet_flag==false) {
+        if(origin==null&&destination==null&&hospital_flag==false&&ambulance_flag==false&&mobile_toilet_flag==false||event_flag==true) {
           showLables();
         }
         if(origin=="")
@@ -1115,29 +1195,32 @@ int j=1;
         if(origin!=null)
       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng(origin).latitude, placeToLatLng(origin).longitude),17));
        else  if(hospital_flag==false&&ambulance_flag==false&&mobile_toilet_flag==false)
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng("Main Gate").latitude, placeToLatLng("Main Gate").longitude),17));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng("LT-1").latitude, placeToLatLng("LT-1").longitude),17));
         if(hospital_flag==true){
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng("Hospital").latitude, placeToLatLng("Hospital").longitude),17));
             IconGenerator iconFactory = new IconGenerator(this);
             iconFactory.setBackground(getDrawable(R.color.hospital));
+            String mDrawableName = "letter_h";
+            int resID = getResources().getIdentifier(mDrawableName, "drawable", getPackageName());
+            LatLng block = placeToLatLng("Hospital");
 
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon("Hospital")))
-                    .position(placeToLatLng("Hospital"))
-                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
-                    ;
-            mMap.addMarker(markerOptions);
+           mMap.addMarker(new MarkerOptions()
+                    .position(block)
+                    .title("Hospital")
+
+                    .icon(BitmapDescriptorFactory.fromResource(resID)));
+
         }
 
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                if(mMap.getCameraPosition().zoom<16){
+                if(mMap.getCameraPosition().zoom<17){
                     for(Marker m:all_mMarkers) {
                         m.remove();
                     }
                 }
-                if(mMap.getCameraPosition().zoom>16&&marker_flag){
+                if(mMap.getCameraPosition().zoom>17&&marker_flag){
                    showLables();
                 }
             }

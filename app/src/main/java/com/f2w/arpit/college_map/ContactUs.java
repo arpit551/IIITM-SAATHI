@@ -48,8 +48,9 @@ public class ContactUs extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        Intent intent = new Intent(ContactUs.this, MapsActivity.class);
-        startActivity(intent);
+        super.onBackPressed();
+//        Intent intent = new Intent(Photo.this, MapsActivity.class);
+//        startActivity(intent);
         finish();
     }
 }

@@ -72,7 +72,7 @@ public class EventListAdapter extends BaseAdapter {
             }
         });
 
-        person_call.setImageResource(R.drawable.callbutton);
+        person_call.setImageResource(R.drawable.mapicon);
         view.setTag(mContactus_detailslist.get(position).getId());
         return view;
     }

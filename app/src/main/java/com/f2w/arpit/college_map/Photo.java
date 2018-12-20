@@ -43,6 +43,7 @@ public class Photo extends AppCompatActivity {
         spinner.setAdapter(new MyAdapter(
                 toolbar.getContext(),
                 new String[]{
+                        "Event List",
                         "Presentation Hall",
                         "Block-I",
                         "Block-II",
@@ -141,9 +142,9 @@ public class Photo extends AppCompatActivity {
     }
     @Override
     public void onBackPressed() {
-
-        Intent intent = new Intent(Photo.this, MapsActivity.class);
-        startActivity(intent);
+super.onBackPressed();
+//        Intent intent = new Intent(Photo.this, MapsActivity.class);
+//        startActivity(intent);
         finish();
     }
 
@@ -183,25 +184,27 @@ public class Photo extends AppCompatActivity {
 
 // ... or ...
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1)
-                imageView1.setImage(ImageSource.resource(R.drawable.plan));
+                imageView1.setImage(ImageSource.resource(R.drawable.eventslist));
             if(getArguments().getInt(ARG_SECTION_NUMBER)==2)
+                imageView1.setImage(ImageSource.resource(R.drawable.plan));
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==3)
                 imageView1.setImage(ImageSource.resource(R.drawable.p1));
 //            imageView1.setOrientation();
-            if(getArguments().getInt(ARG_SECTION_NUMBER)==3)
-                imageView1.setImage(ImageSource.resource(R.drawable.p2));
             if(getArguments().getInt(ARG_SECTION_NUMBER)==4)
+                imageView1.setImage(ImageSource.resource(R.drawable.p2));
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==5)
                 imageView1.setImage(ImageSource.resource(R.drawable.p3));
 //            imageView1.setOrientation();
-            if(getArguments().getInt(ARG_SECTION_NUMBER)==5)
-                imageView1.setImage(ImageSource.resource(R.drawable.p4));
             if(getArguments().getInt(ARG_SECTION_NUMBER)==6)
+                imageView1.setImage(ImageSource.resource(R.drawable.p4));
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==7)
                 imageView1.setImage(ImageSource.resource(R.drawable.p5));
 //            imageView1.setOrientation();
-            if(getArguments().getInt(ARG_SECTION_NUMBER)==7)
-                imageView1.setImage(ImageSource.resource(R.drawable.p6));
             if(getArguments().getInt(ARG_SECTION_NUMBER)==8)
-                imageView1.setImage(ImageSource.resource(R.drawable.lt1));
+                imageView1.setImage(ImageSource.resource(R.drawable.p6));
             if(getArguments().getInt(ARG_SECTION_NUMBER)==9)
+                imageView1.setImage(ImageSource.resource(R.drawable.lt1));
+            if(getArguments().getInt(ARG_SECTION_NUMBER)==10)
                 imageView1.setImage(ImageSource.resource(R.drawable.lt2));
 //            imageView1.setOrientation();
 

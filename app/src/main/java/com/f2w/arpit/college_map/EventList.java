@@ -24,12 +24,16 @@ public class EventList extends AppCompatActivity {
         lvcontactus=(ListView)findViewById(R.id.listview_event);
         mContactus_detailslist =new ArrayList<>();
 
-        mContactus_detailslist.add(new Contactus_details(1,"Control Room","MDP","Security","+917512449606",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(2,"Ambulance","108","Medical","108",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(3,"Mr S M Tahir","7869571718","Hall Management","+917869571718",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(4,"Mr Thomas Mathew","9993095996","Registration","+919993095996",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(5,"Mr Ajay Sharma","9009522168","Transportation","+919009522168",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(6,"Mr Devendra Singh","9926288778","Catering","+919926288778",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(1,"Registration","Convention Center","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(2,"Inauguration Session","Administrative Block","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(3,"Case Study Presentation","LT-1","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(4,"Quiz","Main Pandaal","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(5,"Food Court","Main Pandaal","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(6,"Knowledge Test","Main Pandaal","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(7,"Kit Distribution","Convention Center","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(8,"Award Distribution","Administrative Block","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(9,"Refresher Program","Convention Center","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(10,"Judges Meet","Administrative Block","#","#",R.drawable.barry_allen));
 
         adapter=new EventListAdapter(getApplicationContext(), mContactus_detailslist);
         lvcontactus.setAdapter(adapter);
@@ -37,16 +41,20 @@ public class EventList extends AppCompatActivity {
         lvcontactus.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(),"Press Go icon to show the Path",Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),"Click on marker to locate Destination",Toast.LENGTH_LONG).show();
             }
         });
 
     }
     @Override
     public void onBackPressed() {
-
-        Intent intent = new Intent(EventList.this, MapsActivity.class);
-        startActivity(intent);
+        super.onBackPressed();
+//        Intent intent = new Intent(Photo.this, MapsActivity.class);
+//        startActivity(intent);
         finish();
+
+//        Intent intent = new Intent(EventList.this, MapsActivity.class);
+//        startActivity(intent);
+//        finish();
     }
 }

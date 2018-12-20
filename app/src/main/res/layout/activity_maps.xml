@@ -28,19 +28,29 @@
             app:elevation="0dp"
             app:fabSize="normal"
             app:maxImageSize="54dp"
-
             app:srcCompat="@drawable/stop" />
-
-
-        <Button
+        <android.support.design.widget.FloatingActionButton
             android:id="@+id/start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:background="@drawable/side_nav_bar"
-            android:text="Start "
+            android:layout_gravity="bottom|center"
+            android:layout_margin="@dimen/fab_margin"
+            android:backgroundTint="#00ffffff"
+            android:visibility="invisible"
+            app:elevation="0dp"
+            app:fabSize="normal"
+            app:maxImageSize="54dp"
+            app:srcCompat="@drawable/nav" />
 
-            android:visibility="invisible"/>
+        <!--<Button-->
+            <!--android:id="@+id/start"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="bottom"-->
+            <!--android:background="@drawable/nav"-->
+            <!--android:text="Start "-->
+            <!--android:visibility="invisible"-->
+/>
 
 
 

@@ -6,7 +6,7 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/events"
-            android:icon="@drawable/help"
+            android:icon="@drawable/event"
             android:title="Events" />
         <item
             android:id="@+id/nav_camera"
@@ -19,11 +19,12 @@
         <item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ambulance"
-            android:title="Ambulance" />
+            android:title="Ambulance"
+            android:visible="false"/>
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/hospital"
-            android:title="Hospital" />
+            android:title="Hospital-Ambulance" />
 
         <item
             android:id="@+id/lables"
