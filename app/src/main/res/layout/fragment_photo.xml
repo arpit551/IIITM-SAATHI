@@ -22,7 +22,7 @@
     <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
         android:id="@+id/imageView1"
         android:layout_width="match_parent"
-        android:layout_height="750sp"
+        android:layout_height="650sp"
 
         tools:layout_constraintLeft_creator="1"
         tools:layout_constraintTop_creator="1"

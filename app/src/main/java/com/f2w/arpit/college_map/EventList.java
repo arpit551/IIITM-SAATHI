@@ -25,8 +25,8 @@ public class EventList extends AppCompatActivity {
         mContactus_detailslist =new ArrayList<>();
 
         mContactus_detailslist.add(new Contactus_details(1,"Registration","Convention Center","#","#",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(2,"Inauguration Session","Administrative Block","#","#",R.drawable.barry_allen));
-        mContactus_detailslist.add(new Contactus_details(3,"Case Study Presentation","LT-1","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(2,"Inauguration Session","Main Pandaal","#","#",R.drawable.barry_allen));
+        mContactus_detailslist.add(new Contactus_details(3,"Case Study","LT-1","#","#",R.drawable.barry_allen));
         mContactus_detailslist.add(new Contactus_details(4,"Quiz","Main Pandaal","#","#",R.drawable.barry_allen));
         mContactus_detailslist.add(new Contactus_details(5,"Food Court","Main Pandaal","#","#",R.drawable.barry_allen));
         mContactus_detailslist.add(new Contactus_details(6,"Knowledge Test","Main Pandaal","#","#",R.drawable.barry_allen));

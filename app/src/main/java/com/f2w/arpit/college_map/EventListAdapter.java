@@ -68,7 +68,9 @@ public class EventListAdapter extends BaseAdapter {
                 Intent intent = new Intent(mContext, MapsActivity.class);
                 intent.putExtra("Destination", person_email.getText().toString());
                 intent.putExtra("EventPressed", "true");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mContext.startActivity(intent);
+
             }
         });
 

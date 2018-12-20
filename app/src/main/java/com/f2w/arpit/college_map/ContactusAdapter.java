@@ -72,6 +72,7 @@ public class ContactusAdapter extends BaseAdapter {
         person_call.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { Intent callIntent = new Intent(Intent.ACTION_DIAL);
                 callIntent.setData(Uri.parse("tel:"+(number)));
+                callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 mContext.startActivity(callIntent);
             }
         });

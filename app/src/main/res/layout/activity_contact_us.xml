@@ -8,9 +8,10 @@
     tools:context=".ContactUs">
 
     <ListView
+        android:id="@+id/listview_contactus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/listview_contactus"
+        android:background="#d6f4ff"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="10dp"

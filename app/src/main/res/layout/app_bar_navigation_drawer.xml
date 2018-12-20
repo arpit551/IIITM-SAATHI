@@ -11,7 +11,7 @@
         app:elevation="0dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#ffffff">
+        android:background="#000">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -21,37 +21,35 @@
             >
 
 
+            <!--android:background="@drawable/side_nav_bar"-->
 
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center|right"
+                    android:gravity="center"
                     android:orientation="vertical"
                     >
 
                     <Button
                         android:id="@+id/origin"
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
+                        android:layout_height="wrap_content"
                         android:title="@string/app_name"
                         android:background="@drawable/layout"
-                        android:layout_marginLeft="2dp"
                         android:visibility="visible"
                         android:layout_marginTop="10dp"
-
-                        android:hint="    Your Current Location"
+                        android:hint="Your Current Location"
                         app:showAsAction="ifRoom|collapseActionView" />
                     <Button
                         android:id="@+id/dest"
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
+                        android:layout_height="wrap_content"
                         android:title="@string/app_name"
                         android:background="@drawable/layout"
-                        android:layout_marginLeft="2dp"
                         android:layout_marginTop="5dp"
                         android:visibility="visible"
-                        android:hint="    Your Destiation Location"
+                        android:hint="Your Destiation Location"
                         app:showAsAction="ifRoom|collapseActionView"
 
                         />
@@ -85,11 +83,12 @@
         android:id="@+id/go"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
+        android:layout_gravity="bottom|right"
         android:layout_margin="@dimen/fab_margin"
         app:srcCompat="@drawable/go"
         app:fabSize="normal"
         app:maxImageSize="67dp"
         />
+
 
 </android.support.design.widget.CoordinatorLayout>

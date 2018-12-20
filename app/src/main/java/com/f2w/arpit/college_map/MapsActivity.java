@@ -96,8 +96,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     final static int LOCATION_SETTINGS_REQUEST = 199;
     private static final int REQUEST_CHECK_SETTINGS = 214;
     private static final int REQUEST_ENABLE_GPS = 516;
-    private long UPDATE_INTERVAL = 5;  /* 10 secs */
-    private long FASTEST_INTERVAL = 5; /* 2 sec */
+    private long UPDATE_INTERVAL = 1000;  /* 10 secs */
+    private long FASTEST_INTERVAL = 500; /* 2 sec */
     ProgressDialog pd;
 
     boolean hospital_flag=false,mobile_toilet_flag=false,ambulance_flag=false;
@@ -204,9 +204,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Toast.makeText(MapsActivity.this, "Please give different inputs", Toast.LENGTH_SHORT).show();
                 if (orig.getText().toString()!=""&& des.getText().toString() != "")
                     intent.putExtra("flag_for_start", "true");
-                if(orig.getText().toString() != "" && des.getText().toString()!= ""&&!(orig.getText().toString().equals(des.getText().toString())))
-                startActivity(intent);
-                finish();
+                if(orig.getText().toString() != "" && des.getText().toString()!= ""&&!(orig.getText().toString().equals(des.getText().toString()))){
+                    startActivity(intent);
+                    finish();
+                }
 
             }
         });
@@ -666,37 +667,7 @@ int j=1;
             if(ahead_point!=null&&behind_point!=null)
                 break;
         }
-//        Boolean place0=false,place1=false;
-//        if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[0],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))){
-//            place0=true;
-//        }
-//        if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[1],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination))) {
-//            place1 = true;
-//        }
-//        LatLng right_point = null;
-//        if(place0==true&&place1==false){
-//            right_point =(LatLng) map_latlng.values().toArray()[0];
-//
-//        }
-//        if(place1==true&&place0==false){
-//            right_point =(LatLng) map_latlng.values().toArray()[1];
-//        }
-//        if(place1==true&&place0==true){
-//            if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[1],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween((LatLng) map_latlng.values().toArray()[0],placeToLatLng(destination))){
-//                right_point =(LatLng) map_latlng.values().toArray()[0];
-//            }
-//            else
-//                right_point =(LatLng) map_latlng.values().toArray()[0];
-//        }
-//        if(place0==false&&place1==false){
-//            for(int i=2;i<map_latlng.size();i++){
-//                if(SphericalUtil.computeDistanceBetween( (LatLng) map_latlng.values().toArray()[i],placeToLatLng(destination))<SphericalUtil.computeDistanceBetween(latLng,placeToLatLng(destination) )){
-//                    right_point=(LatLng)map_latlng.values().toArray()[i];
-//                    break;
-//                }
-//
-//            }
-//        }
+
         if(ahead_point==null)
         {
             ahead_point=latLng;
@@ -1003,7 +974,7 @@ int j=1;
             p = new PolylineOptions();
             p.addAll(points);
             p.width(14);
-            p.color(Color.BLUE);
+            p.color(Color.parseColor("#59b6e8"));
         }
         mMap.addPolyline(p);
     }
@@ -1253,6 +1224,7 @@ int j=1;
         mMap.setMapStyle(
                 MapStyleOptions.loadRawResourceStyle(
                         this, R.raw.style_json));
+        mMap.getUiSettings().setZoomControlsEnabled(false);
 //        ArrayList<LatLng> points = null;
 //        PolylineOptions audi_lrc= null;
 //        points = new ArrayList<LatLng>();
