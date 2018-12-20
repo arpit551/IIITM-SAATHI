@@ -20,7 +20,7 @@
         <!--tools:layout_constraintLeft_creator="1"-->
         <!--tools:layout_constraintTop_creator="1" />-->
     <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-        android:id="@+id/imageView"
+        android:id="@+id/imageView1"
         android:layout_width="match_parent"
         android:layout_height="750sp"
 

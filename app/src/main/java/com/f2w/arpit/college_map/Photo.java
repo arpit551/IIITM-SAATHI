@@ -123,7 +123,6 @@ public class Photo extends AppCompatActivity {
             } else {
                 view = convertView;
             }
-            ImageView imageView =(ImageView)view.findViewById(android.R.id.text1);
             TextView textView = (TextView) view.findViewById(android.R.id.text1);
             textView.setText(getItem(position));
 
@@ -180,7 +179,7 @@ public class Photo extends AppCompatActivity {
             View rootView = inflater.inflate(R.layout.fragment_photo, container, false);
 //            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
 //            ImageView imageView=(ImageView)rootView.findViewById(R.id.pic) ;
-            SubsamplingScaleImageView imageView1 = (SubsamplingScaleImageView)rootView.findViewById(R.id.imageView);
+            SubsamplingScaleImageView imageView1 = (SubsamplingScaleImageView)rootView.findViewById(R.id.imageView1);
 
 // ... or ...
             if(getArguments().getInt(ARG_SECTION_NUMBER)==1)

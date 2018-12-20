@@ -96,8 +96,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     final static int LOCATION_SETTINGS_REQUEST = 199;
     private static final int REQUEST_CHECK_SETTINGS = 214;
     private static final int REQUEST_ENABLE_GPS = 516;
-
-
     private long UPDATE_INTERVAL = 5;  /* 10 secs */
     private long FASTEST_INTERVAL = 5; /* 2 sec */
     ProgressDialog pd;
@@ -184,6 +182,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
 //
 //        });
+        destination = getIntent().getStringExtra("Destination");
+        if(destination!=null){
+            des.setText(destination);
+
+        }
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.go);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -199,7 +202,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Toast.makeText(MapsActivity.this, "Please give different inputs", Toast.LENGTH_SHORT).show();
                 if (orig.getText().toString()!=""&& des.getText().toString() != "")
                     intent.putExtra("flag_for_start", "true");
-                if(orig.getText().toString() != "" && des.getText().toString()!= ""&&orig.getText().toString()!=des.getText().toString())
+                if(orig.getText().toString() != "" && des.getText().toString()!= ""&&!(orig.getText().toString().equals(des.getText().toString())))
                 startActivity(intent);
 
             }
@@ -220,7 +223,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         flag_for_start= true;
         if(getIntent().getStringExtra("hospital_flag")!=null)
             hospital_flag= true;
-        if(origin!=null&&destination!=null){
+        if(origin!=null||destination!=null){
             orig.setText(origin);
             des.setText(destination);
 
@@ -696,7 +699,11 @@ int j=1;
             Intent intent = new Intent(MapsActivity.this, Photo.class);
             startActivity(intent);
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        }else if (id == R.id.events ){
+            Intent intent = new Intent(MapsActivity.this, EventList.class);
+            startActivity(intent);
+        }
+        else if (id == R.id.nav_gallery) {
             mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
         } else if (id == R.id.nav_slideshow) {
@@ -1141,7 +1148,8 @@ int j=1;
 //
         int src = -1, dst = -1;
         int n = locations.length;
-        if(origin!=null&&destination!=null) {
+
+        if(origin!=null&&destination!=null&&(!origin.equals(destination)) ){
             for (int i = 0; i < n; i++) {
                 if (locations[i].equals(origin) || locations[i].equals(destination)) {
                     src = i;
@@ -1154,6 +1162,7 @@ int j=1;
                     break;
                 }
             }
+
             getDirectionAS(src, dst);
         }
 //        //set zoom to level to current so that you won't be able to zoom out viz. move outside bounds
