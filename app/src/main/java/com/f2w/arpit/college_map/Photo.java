@@ -44,14 +44,14 @@ public class Photo extends AppCompatActivity {
                 toolbar.getContext(),
                 new String[]{
                         "Presentation Hall",
-                        "BLock I",
-                        "BLock II",
-                        "BLock III",
-                        "BLock IV",
-                        "BLock V",
-                        "BLock VI",
-                        "Lt-1",
-                        "Lt-2"
+                        "Block-I",
+                        "Block-II",
+                        "Block-III",
+                        "Block-IV",
+                        "Block-V",
+                        "Block-VI",
+                        "LT-1",
+                        "LT-2"
                 }));
 
         spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -69,14 +69,14 @@ public class Photo extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
     }
 
