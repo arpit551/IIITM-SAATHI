@@ -3,23 +3,16 @@ package com.f2w.arpit.college_map;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.location.Location;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -42,8 +35,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -52,7 +43,6 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdate;
@@ -72,9 +62,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.maps.android.SphericalUtil;
 import com.google.maps.android.ui.IconGenerator;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
+
 import ir.mirrajabi.searchdialog.SimpleSearchDialogCompat;
 import ir.mirrajabi.searchdialog.core.BaseSearchDialogCompat;
 import ir.mirrajabi.searchdialog.core.SearchResultListener;
@@ -83,14 +77,38 @@ import ir.mirrajabi.searchdialog.core.Searchable;
 import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,  NavigationView.OnNavigationItemSelectedListener {
+    String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "Convention Center", "Cafeteria Canteen", "Main Pandaal", "Block-II", "LT-1", "Block-III", "Block-IV", "Block-VI", "LT-2", "Block-V", "Block-I", "Hospital", "Open Air Theatre (OAT)", "Sports Complex", "MDP", "Visitors Hostel"};
+    String[][][] p = {
+            {	{"0",""},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"18",""},	{"18",""},	{"17","q}e_Dwxc|MNr@JAHFDJBNnCq@?ODWnAqC"},	{"18","q}e_Dwxc|MLr@R@HJBRnCq@HAN@PFbFxCD@DADCnGdD"}	},
+            {	{"0",""},	{"1",""},	{"2","_ze_Dkkc|MfAhH"},	{"3","_ze_Dkkc|Mb@xCfAWDAD@D@B?~@Y"},	{"2",""},	{"2",""},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"14","_ze_Dkkc|M@FcBZQ@ODIJCNEPe@JBV"},	{"18",""},	{"18",""},	{"17","_ze_Dkkc|M@SMMeA{GJIBMnCq@?ODWnAqC"},	{"18","_ze_Dkkc|M@SMMeA{GJIBMnCq@N@PFbFxCD@DADCnGdD"}	},
+            {	{"0",""},	{"0",""},	{"2",""},	{"3","}we_Dcbc|M]mCfAWDAD@D@B?~@Y"},	{"4","wwe_Dabc|My@HB`@]H"},	{"5","wwe_Dabc|My@H@`@H`@x@hB"},	{"7",""},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"3",""},	{"2","}we_Dcbc|M]mCfAWDAD@D@B?~@Y"},	{"5","}se_Dahc|M?F?D@BBBBBD?BAHZTEPFiCpGGb@MB"},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"4",""},	{"5","ize_Dm`c|MLCtAbC"},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"2",""},	{"2",""},	{"2",""},	{"2",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"5",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"2",""},	{"2",""},	{"4",""},	{"4",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"6",""},	{"7","y}e_Dcdc|M_@SEO"},	{"7",""},	{"13",""},	{"13",""},	{"13",""},	{"13",""},	{"13","uaf_Dmdc|MtAY"},	{"14","__f_Deec|MCQGBKy@"},	{"14",""},	{"14",""},	{"14",""},	{"14",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"7",""},	{"8","y}e_Dcdc|MS\\@P"},	{"8",""},	{"8",""},	{"8",""},	{"6",""},	{"6",""},	{"6",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"8",""},	{"9","i~e_Dubc|MwAZ"},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"9",""},	{"10","ecf_Deac|MbAS"},	{"10",""},	{"13",""},	{"13","aaf_Dyac|MSqA"},	{"13",""},	{"8",""},	{"8",""},	{"13",""},	{"13",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"10",""},	{"11","ecf_Deac|MWFCQYQ"},	{"11",""},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"9",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"11",""},	{"12","{cf_Dwcc|MSD@NK\\"},	{"12",""},	{"12",""},	{"10",""},	{"10",""},	{"12",""},	{"12",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"12",""},	{"13","uaf_Dmdc|MgAT"},	{"13",""},	{"13",""},	{"13",""},	{"13",""},	{"13",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"13",""},	{"6",""},	{"6",""},	{"6",""},	{"6",""},	{"6",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"14",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"15",""},	{"16","oge_Dibc|MUnAd@JDD@J@L"},	{"16",""},	{"16",""}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"16",""},	{"18",""},	{"18","_fe_Dmmc|Mj@XBF?H]dA_ArF"}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"17",""},	{"18","{te_Do}c|MkAnCEV?PR@TF`FxCFA|GfD"}	},
+            {	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"18",""}	}
+    };
+    String[] publicToilets = {"pt0","pt1","pt2","pt3","pt4"};
+    String origin=null, destination=null;
 
-    private GoogleMap mMap;
+//    Map<String, LatLng> ptl = new HashMap<String, LatLng>();
+//    LatLng a=new LatLng(26.24655, 78.17255));
+//    ptl.Put("a",a);
 
-
-    GoogleMap map;
+    private GoogleMap mMap, map;
     ArrayList<LatLng> markerPoints;
     TextView tvDistanceDuration;
-    String origin=null, destination=null;
     private LocationRequest mLocationRequest;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     final static int LOCATION_SETTINGS_REQUEST = 199;
@@ -98,29 +116,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int REQUEST_ENABLE_GPS = 516;
     private long UPDATE_INTERVAL = 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 500; /* 2 sec */
-//    ProgressDialog pd;
-
-    boolean hospital_flag=false,mobile_toilet_flag=false,ambulance_flag=false;
+//    kmjnvn, ijhn
+    boolean hospital_flag=false,mobile_toilet_flag=false,ambulance_flag=false, flag1 = false, flag_for_start = false, zoom_flag = true, marker_flag=false, event_flag=false;
     List<Marker> all_mMarkers = new ArrayList<Marker>();
     List<Marker> all_mMarkers_toilet = new ArrayList<Marker>();
-    FloatingActionButton start;
-    Boolean flag1 = false;
-    int flag2 = 2;
-    String[] locations = {"Main Gate", "Administrative Block", "Learning Resource Center (LRC)", "Convention Center", "Cafeteria Canteen", "Main Pandaal", "Block-II", "LT-1", "Block-III", "Block-IV", "Block-VI", "LT-2", "Block-V", "Block-I", "Hospital", "Open Air Theatre (OAT)", "Sports Complex", "MDP", "Visitors Hostel"};
-    Boolean zoom_flag = true;
-    SupportMapFragment mapFragment;
     List<LatLng> all_points = new ArrayList<LatLng>();
-    Boolean flag_for_start = false;
-    FloatingActionButton stop;
-    boolean marker_flag=false;
+    FloatingActionButton start, stop, go;
+    int flag2 = 2;
+    SupportMapFragment mapFragment;
     MenuItem label;
-    Button orig;
-   Button des;
-   Marker marker1;
+    Button orig, des;
+    Marker marker1;
     FusedLocationProviderClient m;
-    Boolean event_flag=false;
-    String[] publicToilets = {"pt0","pt1","pt2","pt3","pt4"};
-
+    private ArrayList<SearchModel> initData(){
+        ArrayList<SearchModel> items = new ArrayList<>();
+        items.add(new SearchModel("Main Gate"));
+        items.add(new SearchModel("Administrative Block"));
+        items.add(new SearchModel("Learning Resource Center (LRC)"));
+        items.add(new SearchModel("Convention Center"));
+        items.add(new SearchModel("Cafeteria Canteen"));
+        items.add(new SearchModel("Main Pandaal"));
+        items.add(new SearchModel("Block-II"));
+        items.add(new SearchModel("LT-1"));
+        items.add(new SearchModel("Block-III"));
+        items.add(new SearchModel("Block-IV"));
+        items.add(new SearchModel("Block-VI"));
+        items.add(new SearchModel("LT-2"));
+        items.add(new SearchModel("Block-V"));
+        items.add(new SearchModel("Block-I"));
+        items.add(new SearchModel("Hospital"));
+        items.add(new SearchModel("Open Air Theatre (OAT)"));
+        items.add(new SearchModel("Sports Complex"));
+        items.add(new SearchModel("MDP"));
+        items.add(new SearchModel("Visitors Hostel"));
+        return items;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,13 +178,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Toast.makeText(MapsActivity.this, "" + searchable.getTitle(), Toast.LENGTH_SHORT).show();
                         baseSearchDialogCompat.dismiss();
                         source[0] = searchable.getTitle();
-
                         orig.setText(source[0]);
                     }
                 }).show();
-
             }
         });
+
         findViewById(R.id.dest).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -166,31 +195,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         baseSearchDialogCompat.dismiss();
                         destination1[0] = searchable.getTitle();
                         des.setText(destination1[0]);
-
-
                     }
                 }).show();
-
             }
         });
-//        findViewById(R.id.go).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, MapsActivity.class);
-//                intent.putExtra("Destination", destination[0]);
-//                intent.putExtra("Origin", source[0]);
-//                startActivity(intent);
-//            }
-//
-//
-//        });
         destination = getIntent().getStringExtra("Destination");
         if(destination!=null){
             des.setText(destination);
-
         }
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.go);
-        fab.setOnClickListener(new View.OnClickListener() {
+
+        go = (FloatingActionButton) findViewById(R.id.go);
+        start = (FloatingActionButton) findViewById(R.id.start);
+        stop = (FloatingActionButton)findViewById(R.id.stop);
+
+        go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -208,12 +226,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     startActivity(intent);
                     finish();
                 }
-
             }
         });
-        // MY end
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 //        startLocationUpdates();
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -228,7 +244,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         String a=getIntent().getStringExtra("flag_for_start");
         if(getIntent().getStringExtra("flag_for_start")!=null)
-        flag_for_start= true;
+            flag_for_start= true;
         if(getIntent().getStringExtra("hospital_flag")!=null)
             hospital_flag= true;
         if(origin!=null||destination!=null){
@@ -237,11 +253,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
 
-        start = (FloatingActionButton) findViewById(R.id.start);
         if(flag_for_start)
             start.show();
         else
             start.hide();
+
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -254,8 +270,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-         stop = (FloatingActionButton) findViewById(R.id.stop);
-        stop = (FloatingActionButton) findViewById(R.id.stop);
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -267,7 +281,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         });
-
 
         if(mMap!=null)
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
@@ -305,38 +318,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             startLocationUpdates();
         }
-
-
-
-
-
     }
-    // MYY
-    private ArrayList<SearchModel> initData(){
-        ArrayList<SearchModel> items = new ArrayList<>();
-        items.add(new SearchModel("Main Gate"));
-        items.add(new SearchModel("Administrative Block"));
-        items.add(new SearchModel("Learning Resource Center (LRC)"));
-        items.add(new SearchModel("Convention Center"));
-        items.add(new SearchModel("Cafeteria Canteen"));
-        items.add(new SearchModel("Main Pandaal"));
-        items.add(new SearchModel("Block-II"));
-        items.add(new SearchModel("LT-1"));
-        items.add(new SearchModel("Block-III"));
-        items.add(new SearchModel("Block-IV"));
-        items.add(new SearchModel("Block-VI"));
-        items.add(new SearchModel("LT-2"));
-        items.add(new SearchModel("Block-V"));
-        items.add(new SearchModel("Block-I"));
-        items.add(new SearchModel("Hospital"));
-        items.add(new SearchModel("Open Air Theatre (OAT)"));
-        items.add(new SearchModel("Sports Complex"));
-        items.add(new SearchModel("MDP"));
-        items.add(new SearchModel("Visitors Hostel"));
-        return items;
-    }
-    //MYY end
-
 
     @Override
     protected void onResume() {
@@ -351,16 +333,13 @@ int backpress=0;
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-
             //To Do
-
             if(flag_for_start||hospital_flag){
                 Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
                 startActivity(intent);
                 finish();
             }
             else {
-
                 backpress = (backpress + 1);
                 Toast.makeText(getApplicationContext(), " Press Back again to Exit ", Toast.LENGTH_SHORT).show();
 
@@ -407,63 +386,23 @@ int backpress=0;
         double long1 = latLng1.longitude * PI / 180;
         double lat2 = latLng2.latitude * PI / 180;
         double long2 = latLng2.longitude * PI / 180;
-
         double dLon = (long2 - long1);
-
         double y = Math.sin(dLon) * Math.cos(lat2);
         double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1)
                 * Math.cos(lat2) * Math.cos(dLon);
-
         double brng = Math.atan2(y, x);
 
         brng = Math.toDegrees(brng);
         brng = (brng + 360) % 360;
-
         return brng;
     }
 
-
-//    boolean isMarkerRotating=false;
-//    private void rotateMarker(final Marker marker, final float toRotation) {
-//        if(!isMarkerRotating) {
-//            final Handler handler = new Handler();
-//            final long start = SystemClock.uptimeMillis();
-//            final float startRotation = marker.getRotation();
-//            final long duration = 2000;
-//
-//            final Interpolator interpolator = new LinearInterpolator();
-//
-//            handler.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    isMarkerRotating = true;
-//
-//                    long elapsed = SystemClock.uptimeMillis() - start;
-//                    float t = interpolator.getInterpolation((float) elapsed / duration);
-//
-//                    float rot = t * toRotation + (1 - t) * startRotation;
-//
-//                    float bearing =  -rot > 180 ? rot / 2 : rot;
-//
-//                    marker.setRotation(bearing);
-//
-//                    if (t < 1.0) {
-//                        // Post again 16ms later.
-//                        handler.postDelayed(this, 16);
-//                    } else {
-//                        isMarkerRotating = false;
-//                    }
-//                }
-//            });
-//        }
-//    }
 void showLablesToilets(){
     CameraPosition newCamPos = new CameraPosition.Builder()
             .target(placeToLatLng(publicToilets[0]))      // Sets the center of the map to Mountain View
             .zoom(18)                    // Sets the tilt of the camera to 30 degrees
             .build();
     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCamPos));
-//    marker_flag=true;
     for(int i=0;i<3;i++){
 
         mobile_toilet_flag=true;
@@ -488,11 +427,7 @@ void showLablesToilets(){
 //                .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
 //        marker = mMap.addMarker(markerOptions);
         all_mMarkers_toilet.add(marker);
-
-
-
     }
-
 }
     public void hide_marker_toilets(){
 //        marker_flag=false;
@@ -502,45 +437,8 @@ void showLablesToilets(){
         }
     }
 
-    public void animateMarker(final Marker marker, final LatLng toPosition,
-                              final boolean hideMarker) {
-        final Handler handler = new Handler();
-        final long start = SystemClock.uptimeMillis();
-        Projection proj = mMap.getProjection();
-        Point startPoint = proj.toScreenLocation(marker.getPosition());
-        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
-        final long duration = 500;
-
-        final Interpolator interpolator = new LinearInterpolator();
-
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                long elapsed = SystemClock.uptimeMillis() - start;
-                float t = interpolator.getInterpolation((float) elapsed
-                        / duration);
-                double lng = t * toPosition.longitude + (1 - t)
-                        * startLatLng.longitude;
-                double lat = t * toPosition.latitude + (1 - t)
-                        * startLatLng.latitude;
-                marker.setPosition(new LatLng(lat, lng));
-
-                if (t < 1.0) {
-                    // Post again 16ms later.
-                    handler.postDelayed(this, 16);
-                } else {
-                    if (hideMarker) {
-                        marker.setVisible(false);
-                    } else {
-                        marker.setVisible(true);
-                    }
-                }
-            }
-        });
-
-    }
     Marker start_marker;
-int j=1;
+    int j=1;
     @SuppressLint("MissingPermission")
     protected void startLocationUpdates() {
         m=getFusedLocationProviderClient(this);
@@ -601,18 +499,12 @@ int j=1;
                             }
                             break;
                         case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-
                             break;
                     }
                 }
             }
         });
-
-
-
         // new Google API SDK v11 uses getFusedLocationProviderClient(this)
-
-
     }
 
 
@@ -644,8 +536,6 @@ int j=1;
 
             double distance = SphericalUtil.computeDistanceBetween(latLng, all_points.get(i));
             map_latlng.put(distance,all_points.get(i));
-
-
         }
 
 //        if(j==1)
@@ -682,8 +572,6 @@ int j=1;
 //        animateMarker(start_marker,latLng,false);
 //        rotateMarker(start_marker,bearing);
         LatLng mlastlocation=latLng;
-
-
         CameraPosition newCamPos = new CameraPosition.Builder()
                 .target(latLng)      // Sets the center of the map to Mountain View
                 .zoom(19)                   // Sets the zoom
@@ -696,31 +584,17 @@ int j=1;
 //        mMap.animateCamera(zoom);
     }
 
-    else
-    {
-
+    else { }
     }
-    }
-
-
-
-
     private void requestPermissions() {
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
     }
 
-
-
     @Override
     public boolean onNavigationItemSelected( MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-
-
-
-
         if (id == R.id.nav_camera) {
             Intent intent = new Intent(MapsActivity.this, Photo.class);
             startActivity(intent);
@@ -785,9 +659,6 @@ int j=1;
         return true;
     }
 
-    /*
-    me
-     */
     private List<LatLng> decodePoly1(String encoded) {
 
         List<LatLng> poly = new ArrayList<LatLng>();
@@ -822,152 +693,75 @@ int j=1;
         return poly;
     }
     private  LatLng  placeToLatLng(String place){
-        if(place=="Main Gate")
-        {
-
-            LatLng main_gate = new LatLng(26.25002, 78.17634);
-            return main_gate;
-        }
-        if(place.equals(locations[7]))
-        {
-
-            LatLng main_gate = new LatLng(26.25002, 78.17296);
-            return main_gate;
-        }
-        if(place.equals(locations[6]))
-        {
-
-            LatLng main_gate = new LatLng(26.25033608687278, 78.17326168608406);
-            return main_gate;
-        }
-        if(place.equals(locations[8]))
-        {
-
-            LatLng main_gate = new LatLng(26.25014, 78.17262);
-            return main_gate;
-        }
-        if(place.equals(locations[9]))
-        {
-
-            LatLng main_gate = new LatLng(26.25053, 78.17254);
-            return main_gate;
-        }
-        if(place.equals(locations[10]))
-        {
-
-            LatLng main_gate = new LatLng(26.25090, 78.17247);
-            return main_gate;
-        }
-        if(place.equals(locations[11]))
-        {
-
-            LatLng main_gate = new LatLng(26.25118, 78.17268);
-            return main_gate;
-        }
-        if(place.equals(locations[12]))
-        {
-
-            LatLng main_gate = new LatLng(26.25105, 78.17300);
-            return main_gate;
-        }
-        if(place.equals(locations[13]))
-        {
-
-            LatLng main_gate = new LatLng(26.25066, 78.17311);
-            return main_gate;
-        }
         if(place.equals(locations[0]))//mg
         {
-
-            LatLng main_gate = new LatLng(26.25008, 78.17640);
-            return main_gate;
-        }if(place.equals(locations[1]))//ad
+            return new LatLng(26.25008, 78.17640); }
+        if(place.equals(locations[1]))//ad
         {
-
-            LatLng main_gate = new LatLng(26.24942, 78.17403);
-            return main_gate;
-        }
+            return new LatLng(26.24942, 78.17403); }
         if(place.equals(locations[2]))//lrc
         {
-
-            LatLng main_gate = new LatLng(26.24909, 78.17265);
-            return main_gate;
-        }
+            return new LatLng(26.24909, 78.17265); }
         if(place.equals(locations[3]))//na
         {
-
-            LatLng main_gate = new LatLng(26.24846, 78.17360);
-            return main_gate;
-        } if(place.equals(locations[4]))//cafe
+            return new LatLng(26.24846, 78.17360); }
+        if(place.equals(locations[4]))//cafe
         {
-
-            LatLng main_gate = new LatLng(26.24950, 78.17238);
-            return main_gate;
-        } if(place.equals(locations[5]))//cr
+            return new LatLng(26.24950, 78.17238); }
+        if(place.equals(locations[5]))//cr
         {
-
-            LatLng main_gate = new LatLng(26.24888, 78.17161);
-            return main_gate;
-        }
-
+            return new LatLng(26.24888, 78.17161); }
+        if(place.equals(locations[6]))//b2
+        {
+            return new LatLng(26.25033608687278, 78.17326168608406); }
+        if(place.equals(locations[7]))//lt1
+        {
+            return new LatLng(26.25002, 78.17296); }
+        if(place.equals(locations[8]))//b3
+        {
+            return new LatLng(26.25014, 78.17262); }
+        if(place.equals(locations[9]))//b4
+        {
+            return new LatLng(26.25053, 78.17254); }
+        if(place.equals(locations[10]))//b5
+        {
+            return new LatLng(26.25090, 78.17247); }
+        if(place.equals(locations[11]))//Lt2
+        {
+            return new LatLng(26.25118, 78.17268); }
+        if(place.equals(locations[12]))//b6
+        {
+            return new LatLng(26.25105, 78.17300); }
+        if(place.equals(locations[13]))//b1
+        {
+            return new LatLng(26.25066, 78.17311); }
         if(place.equals(locations[14]))//hosp
         {
-
-            LatLng main_gate = new LatLng(26.25036, 78.17352);
-            return main_gate;
-        }if(place.equals(locations[15]))//oat
+            return new LatLng(26.25036, 78.17352); }
+        if(place.equals(locations[15]))//oat
         {
-
-            LatLng main_gate = new LatLng(26.24636, 78.17207);
-            return main_gate;
-        }if(place.equals(locations[16]))//sports
+            return new LatLng(26.24636, 78.17207); }
+        if(place.equals(locations[16]))//sports
         {
-
-            LatLng main_gate = new LatLng(26.24655, 78.17255);
-            return main_gate;
-        }
+            return new LatLng(26.24655, 78.17255); }
         if(place.equals(locations[17]))//mdp
         {
-
-            LatLng main_gate = new LatLng(26.24888, 78.17706);
-            return main_gate;
-        }
+            return new LatLng(26.24888, 78.17706); }
         if(place.equals(locations[18]))//vh
         {
-
-            LatLng main_gate = new LatLng(26.24632, 78.17410);
-            return main_gate;
-        }
-        if(place.equals(publicToilets[0]))//vh
-        {
-
-            LatLng main_gate = new LatLng(26.249335, 78.171364);
-            return main_gate;
-        }
-        if(place.equals(publicToilets[1]))//vh
-        {
-
-            LatLng main_gate = new LatLng(26.249278, 78.171870);
-            return main_gate;
-        }
-        if(place.equals(publicToilets[2]))//vh
-        {
-
-            LatLng main_gate = new LatLng(26.249007, 78.172228
-
-            );
-            return main_gate;
-        }
-// ends
-
-
+            return new LatLng(26.24632, 78.17410); }
+        if(place.equals(publicToilets[0])) {
+            return new LatLng(26.249335, 78.171364); }
+        if(place.equals(publicToilets[1])) {
+            return new LatLng(26.249278, 78.171870); }
+        if(place.equals(publicToilets[2])) {
+            return new LatLng(26.249007, 78.172228); }
         return null;
     }
+
     private void pathDrawn(List<LatLng> poly){
         ArrayList<LatLng> points = null;
-
         PolylineOptions p= null;
-
         points = new ArrayList<LatLng>();
         for (int l = 0; l <poly.size(); l++) {
             points.add(poly.get(l));
@@ -978,30 +772,6 @@ int j=1;
         }
         mMap.addPolyline(p);
     }
-
-  String[][][] p =
-            {
-{	{"0",""},	{"1" , "_~e_D_zc|MTzAEBCBCBADAF?F@D@BBDBBB@B@B@dA|GHDHGH^"},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"1" , ""},	{"18",""},	{"18",""},	{"17","q}e_Dwxc|MNr@JAHFDJBNnCq@?ODWnAqC"},	{"18","q}e_Dwxc|MLr@R@HJBRnCq@HAN@PFbFxCD@DADCnGdD"}	},
-{	{"0",""},	{"1",""},	{"2","_ze_Dkkc|MfAhH"},	{"3","_ze_Dkkc|Mb@xCfAWDAD@D@B?~@Y"},	{"2",""},	{"2",""},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@c@wC"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"14","_ze_Dkkc|M@FcBZQ@ODIJCNEPe@JBV"},	{"18",""},	{"18",""},	{"17","_ze_Dkkc|M@SMMeA{GJIBMnCq@?ODWnAqC"},	{"18","_ze_Dkkc|M@SMMeA{GJIBMnCq@N@PFbFxCD@DADCnGdD"}	},
-{	{"0",""},	{"0",""},	{"2",""},	{"3","}we_Dcbc|M]mCfAWDAD@D@B?~@Y"},	{"4","wwe_Dabc|My@HB`@]H"},	{"5","wwe_Dabc|My@H@`@H`@x@hB"},	{"7",""},	{"7","wwe_Dabc|Me@mCMRWRQHg@De@YUj@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"3",""},	{"2","}we_Dcbc|M]mCfAWDAD@D@B?~@Y"},	{"5","}se_Dahc|M?F?D@BBBBBD?BAHZTEPFiCpGGb@MB"},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RPCXAd@WP_@~Ck@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"4",""},	{"5","ize_Dm`c|MLCtAbC"},	{"7",""},	{"7","y}e_Dcdc|MRg@b@RVEHJGl@Fl@Rf@"},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"2",""},	{"2",""},	{"2",""},	{"2",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"5",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"4",""},	{"2",""},	{"2",""},	{"4",""},	{"4",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"6",""},	{"7","y}e_Dcdc|M_@SEO"},	{"7",""},	{"13",""},	{"13",""},	{"13",""},	{"13",""},	{"13","uaf_Dmdc|MtAY"},	{"14","__f_Deec|MCQGBKy@"},	{"14",""},	{"14",""},	{"14",""},	{"14",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"7",""},	{"8","y}e_Dcdc|MS\\@P"},	{"8",""},	{"8",""},	{"8",""},	{"6",""},	{"6",""},	{"6",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"8",""},	{"9","i~e_Dubc|MwAZ"},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""},	{"7",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"9",""},	{"10","ecf_Deac|MbAS"},	{"10",""},	{"13",""},	{"13","aaf_Dyac|MSqA"},	{"13",""},	{"8",""},	{"8",""},	{"13",""},	{"13",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"10",""},	{"11","ecf_Deac|MWFCQYQ"},	{"11",""},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"9",""},	{"9",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"11",""},	{"12","{cf_Dwcc|MSD@NK\\"},	{"12",""},	{"12",""},	{"10",""},	{"10",""},	{"12",""},	{"12",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"12",""},	{"13","uaf_Dmdc|MgAT"},	{"13",""},	{"13",""},	{"13",""},	{"13",""},	{"13",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"13",""},	{"6",""},	{"6",""},	{"6",""},	{"6",""},	{"6",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"14",""},	{"1",""},	{"1",""},	{"1",""},	{"1",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"15",""},	{"16","oge_Dibc|MUnAd@JDD@J@L"},	{"16",""},	{"16",""}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"16",""},	{"18",""},	{"18","_fe_Dmmc|Mj@XBF?H]dA_ArF"}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"17",""},	{"18","{te_Do}c|MkAnCEV?PR@TF`FxCFA|GfD"}	},
-{	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"0",""},	{"18",""}	}
-}
-    ;
 
     private void getDirectionAS(int o, int d) {
         while(o != d){
@@ -1028,39 +798,6 @@ int j=1;
                 o=d;
             }
         }
-//        placeToLatLng(origin);
-//        placeToLatLng(dest);
-//        if(origin.equals("Main Gate ") )
-//        {
-//                if(dest.equals("Administrative Block")) {
-//                    List<LatLng> poly = decodePoly1(path[0][0][1]);
-//                    pathDrawn(poly);
-//                }
-//                if(dest.equals("Learning Resource Center")) {
-//                    List<LatLng> poly = decodePoly1("cze_Dskc|MJz@l@zD");
-//
-//                    pathDrawn(poly);
-//                    getDirectionAS("Main Gate ","Administrative Block");
-//
-//                }
-//                 if(dest.equals("B-Block/LT-1")) {
-//
-//                getDirectionAS("Main Gate ","Administrative Block");
-//                     getDirectionAS("Administrative Block","B-Block/LT-1");
-//                }
-//                if(dest.equals("New Auditorium")) {
-//
-//                getDirectionAS("Main Gate ","Administrative Block");
-//                getDirectionAS("Administrative Block","New Auditorium");
-//                }
-//
-//
-//       }
-
-
-
-
-
     }
     void showLables(){
 //        final List<Marker> blocks_list=new ArrayList<>();
@@ -1082,21 +819,21 @@ int j=1;
 //            a++;
 //
 //        }
+
         marker_flag=true;
-        for(int i=0;i<19;i++){if(i!=14) {
-            IconGenerator iconFactory = new IconGenerator(this);
-            iconFactory.setBackground(getDrawable(R.color.icon));
-            iconFactory.setTextAppearance(R.style.iconGenText);
-            Marker marker;
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(locations[i])))
-                    .position(placeToLatLng(locations[i]))
-                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
-            marker = mMap.addMarker(markerOptions);
-            all_mMarkers.add(marker);
-        }
-
-
+        for(int i=0;i<19;i++) {
+            if (i != 14) {
+                IconGenerator iconFactory = new IconGenerator(this);
+                iconFactory.setBackground(getDrawable(R.color.icon));
+                iconFactory.setTextAppearance(R.style.iconGenText);
+                Marker marker;
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(locations[i])))
+                        .position(placeToLatLng(locations[i]))
+                        .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
+                marker = mMap.addMarker(markerOptions);
+                all_mMarkers.add(marker);
+            }
         }
 //        for(int i=14;i<17;i++){
 //            IconGenerator iconFactory = new IconGenerator(this);
@@ -1123,12 +860,8 @@ int j=1;
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-
         enableMyLocationIfPermitted();
-
         markerPoints = new ArrayList<LatLng>();
-
 
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.setMinZoomPreference(16);
@@ -1159,13 +892,13 @@ int j=1;
         if(origin==null&&destination==null&&hospital_flag==false&&ambulance_flag==false&&mobile_toilet_flag==false||event_flag==true) {
           showLables();
         }
-        if(origin=="")
+        if(origin.equals(""))
             origin=null;
-        if(destination=="")
+        if(destination.equals(""))
             destination=null;
         if(origin!=null)
-      mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng(origin).latitude, placeToLatLng(origin).longitude),17));
-       else  if(hospital_flag==false&&ambulance_flag==false&&mobile_toilet_flag==false)
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng(origin).latitude, placeToLatLng(origin).longitude),17));
+        else  if(hospital_flag==false&&ambulance_flag==false&&mobile_toilet_flag==false)
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng("LT-1").latitude, placeToLatLng("LT-1").longitude),17));
         if(hospital_flag==true){
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(placeToLatLng("Hospital").latitude, placeToLatLng("Hospital").longitude),17));
@@ -1175,13 +908,11 @@ int j=1;
             int resID = getResources().getIdentifier(mDrawableName, "drawable", getPackageName());
             LatLng block = placeToLatLng("Hospital");
 
-           mMap.addMarker(new MarkerOptions()
+            mMap.addMarker(new MarkerOptions()
                     .position(block)
                     .title("Hospital")
-
                     .icon(BitmapDescriptorFactory.fromResource(resID)));
-
-        }
+       }
 
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
@@ -1216,32 +947,13 @@ int j=1;
                     break;
                 }
             }
-
             getDirectionAS(src, dst);
         }
-//        //set zoom to level to current so that you won't be able to zoom out viz. move outside bounds
-//        mMap.setMinZoomPreference(mMap.getCameraPosition().zoom);
+
         mMap.setMapStyle(
                 MapStyleOptions.loadRawResourceStyle(
                         this, R.raw.style_json));
         mMap.getUiSettings().setZoomControlsEnabled(false);
-//        ArrayList<LatLng> points = null;
-//        PolylineOptions audi_lrc= null;
-//        points = new ArrayList<LatLng>();
-//        audi_lrc = new PolylineOptions();
-//        double lat = 26.249182;
-//        double lng =78.172871;
-//        LatLng position = new LatLng(lat, lng);
-//
-//        points.add(position);
-//        double lat1 = 26.249428;
-//        double lng1 =78.174073;
-//        LatLng position1 = new LatLng(lat1, lng1);
-//
-//        points.add(position1);
-//        audi_lrc.addAll(points);
-//        audi_lrc.width(16);
-//        audi_lrc.color(Color.WHITE);
         IconGenerator iconFactory = new IconGenerator(this);
         if(origin!=null&&destination!=null) {
             iconFactory.setBackground(getDrawable(R.color.icon));
@@ -1250,15 +962,13 @@ int j=1;
             MarkerOptions markerOptions = new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(origin)))
                     .position(placeToLatLng(origin))
-                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV())
-                    ;
+                    .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
 
             mMap.addMarker(markerOptions);
             MarkerOptions markerOptions1 = new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon(destination)))
                     .position(placeToLatLng(destination))
                     .anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
-
             mMap.addMarker(markerOptions1);
         }
         // set new title to the MenuItem
@@ -1278,19 +988,15 @@ int j=1;
                     LOCATION_PERMISSION_REQUEST_CODE);
         } else if (mMap != null) {
             mMap.setMyLocationEnabled(true);
-
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
         }
     }
 
     private void showDefaultLocation() {
-       // Toast.makeText(this, "Location permission not granted, " +
-         //               "showing default location",
-           //     Toast.LENGTH_SHORT).show();
         LatLng main_gate = new LatLng(26.25002, 78.17634);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(main_gate));
     }
-int x=0;
+    int x=0;
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -1302,33 +1008,72 @@ int x=0;
                 } else {
                     showDefaultLocation();
                     x=1;
-//               if(x==1){
-//                   x++;
-//                   AlertDialog.Builder builder;
-//                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                       builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-//                   } else {
-//                       builder = new AlertDialog.Builder(this);
-//                   }
-//                   builder.setTitle("Permission not given")
-//                           .setMessage("You haven't given appropriate permission to start the app please restart and give permission")
-//                           .setPositiveButton("Restart", new DialogInterface.OnClickListener() {
-//                               public void onClick(DialogInterface dialog, int which) {
-//                                   Intent intent = new Intent(MapsActivity.this, MapsActivity.class);
-//                                   startActivity(intent);
-//                                   finish();
-//                               }
-//                           })
-//
-//                           .setIcon(android.R.drawable.ic_dialog_alert)
-//                           .show();
-//               }
                 }
                 return;
             }
-
         }
     }
 
+//    public void animateMarker(final Marker marker, final LatLng toPosition,
+//                              final boolean hideMarker) {
+//        final Handler handler = new Handler();
+//        final long start = SystemClock.uptimeMillis();
+//        Projection proj = mMap.getProjection();
+//        Point startPoint = proj.toScreenLocation(marker.getPosition());
+//        final LatLng startLatLng = proj.fromScreenLocation(startPoint);
+//        final long duration = 500;
+//        final Interpolator interpolator = new LinearInterpolator();
+//        handler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                long elapsed = SystemClock.uptimeMillis() - start;
+//                float t = interpolator.getInterpolation((float) elapsed
+//                        / duration);
+//                double lng = t * toPosition.longitude + (1 - t)
+//                        * startLatLng.longitude;
+//                double lat = t * toPosition.latitude + (1 - t)
+//                        * startLatLng.latitude;
+//                marker.setPosition(new LatLng(lat, lng));
+//
+//                if (t < 1.0) {
+//                    // Post again 16ms later.
+//                    handler.postDelayed(this, 16);
+//                } else {
+//                    if (hideMarker) {
+//                        marker.setVisible(false);
+//                    } else {
+//                        marker.setVisible(true);
+//                    }
+//                }
+//            }
+//        });
+//    }
 
+//    boolean isMarkerRotating=false;
+//    private void rotateMarker(final Marker marker, final float toRotation) {
+//        if(!isMarkerRotating) {
+//            final Handler handler = new Handler();
+//            final long start = SystemClock.uptimeMillis();
+//            final float startRotation = marker.getRotation();
+//            final long duration = 2000;
+//            final Interpolator interpolator = new LinearInterpolator();
+//            handler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    isMarkerRotating = true;
+//                    long elapsed = SystemClock.uptimeMillis() - start;
+//                    float t = interpolator.getInterpolation((float) elapsed / duration);
+//                    float rot = t * toRotation + (1 - t) * startRotation;
+//                    float bearing =  -rot > 180 ? rot / 2 : rot;
+//                    marker.setRotation(bearing);
+//                    if (t < 1.0) {
+//                        // Post again 16ms later.
+//                        handler.postDelayed(this, 16);
+//                    } else {
+//                        isMarkerRotating = false;
+//                    }
+//                }
+//            });
+//        }
+//    }
 }
