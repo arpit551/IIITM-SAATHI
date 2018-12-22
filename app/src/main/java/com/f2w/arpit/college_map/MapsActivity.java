@@ -98,7 +98,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int REQUEST_ENABLE_GPS = 516;
     private long UPDATE_INTERVAL = 1000;  /* 10 secs */
     private long FASTEST_INTERVAL = 500; /* 2 sec */
-    ProgressDialog pd;
+//    ProgressDialog pd;
 
     boolean hospital_flag=false,mobile_toilet_flag=false,ambulance_flag=false;
     List<Marker> all_mMarkers = new ArrayList<Marker>();
@@ -126,8 +126,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_drawer);
-        pd = new ProgressDialog(this);
-        pd.setMessage("Starting Navigation");
+//        pd = new ProgressDialog(this);
+//        pd.setMessage("Starting Navigation");
         //My
         final String[] destination1 = new String[1];
         final String[] source = new String[1];
@@ -249,7 +249,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 flag2=2;
                 stop.show();
                 start.hide();
-                pd.show();
+//                pd.show();
 
             }
         });
@@ -578,8 +578,8 @@ int j=1;
                     m.requestLocationUpdates(mLocationRequest, new LocationCallback() {
                                 @Override
                                 public void onLocationResult(LocationResult locationResult) {
-                                    if(pd!=null)
-                                        pd.dismiss();
+//                                    if(pd!=null)
+//                                        pd.dismiss();
                                     // do work here
                                     onLocationChanged(locationResult.getLastLocation());
                                 }
