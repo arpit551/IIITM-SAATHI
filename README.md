@@ -1,2 +1,3 @@
 # IIITM-SAATHI
-A guide for navigating through the campus of ABV-IIITM, Gwalior. It connects all the points with the shortest path and have navigation views. You can download it from Google PlayStore.
+Atal Bihari Vajpayee-Indian Institute of Information Technology and Management (ABV-IIITM), Gwalior is an institute committed to taking academics to unprecedented levels of brilliance and efficiency.
+This app Mainly aims to provide correct guidance for the visitors of National Convention on Quality Concepts (NCQC-2018).
